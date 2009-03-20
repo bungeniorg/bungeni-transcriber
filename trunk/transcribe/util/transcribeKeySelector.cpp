@@ -1,0 +1,308 @@
+#ifdef HAVE_CONFIG_H
+# include "config.h"
+#endif
+
+
+#include "util/customwidgets.hpp"
+#include <vlc_keys.h>
+#include "transcribeKeySelector.hpp"
+#include <QWidget>
+
+#include <QCheckBox>
+#include <QComboBox>
+#include <QLineEdit>
+#include <QTreeWidget>
+#include <QSpinBox>
+#include <QLabel>
+#include <QDoubleSpinBox>
+#include <QPushButton>
+#include <QVector>
+#include <QDialog>
+#include <QGridLayout>
+#include <QSettings>
+#include <QDialogButtonBox>
+class QTreeWidget;
+class QTreeWidgetItem;
+class QGroupBox;
+
+class QVBoxLayout;
+
+
+transcribeKeyInputDialog::transcribeKeyInputDialog( QTreeWidget *_table,
+                                QString keyToChange,
+                                QWidget *_parent ) :
+                                QDialog( _parent ), keyValue(0)
+{
+    setModal( true );
+    conflicts = false;
+
+    table = _table;
+    setWindowTitle( qtr( "Hotkey for " ) + keyToChange );
+
+    vLayout = new QVBoxLayout( this );
+    selected = new QLabel( qtr( "Press the new keys for " ) + keyToChange );
+    vLayout->addWidget( selected , Qt::AlignCenter );
+
+    buttonBox = new QDialogButtonBox;
+    QPushButton *ok = new QPushButton( qtr("OK") );
+    QPushButton *cancel = new QPushButton( qtr("Cancel") );
+    buttonBox->addButton( ok, QDialogButtonBox::AcceptRole );
+    buttonBox->addButton( cancel, QDialogButtonBox::RejectRole );
+    ok->setDefault( true );
+
+    vLayout->addWidget( buttonBox );
+    buttonBox->hide();
+
+    CONNECT( buttonBox, accepted(), this, accept() );
+    CONNECT( buttonBox, rejected(), this, reject() );
+}
+
+void transcribeKeyInputDialog::checkForConflicts( int i_vlckey )
+{
+     QList<QTreeWidgetItem *> conflictList =
+         table->findItems( VLCKeyToString( i_vlckey ), Qt::MatchExactly, 1 );
+
+    if( conflictList.size() )
+    {
+        QLabel *warning = new QLabel(
+          qtr("Warning: the key is already assigned to \"") +
+          conflictList[0]->text( 0 ) + "\"" );
+        vLayout->insertWidget( 1, warning );
+        buttonBox->show();
+
+        conflicts = true;
+    }
+    else accept();
+}
+
+void transcribeKeyInputDialog::keyPressEvent( QKeyEvent *e )
+{
+    if( e->key() == Qt::Key_Tab ||
+        e->key() == Qt::Key_Shift ||
+        e->key() == Qt::Key_Control ||
+        e->key() == Qt::Key_Meta ||
+        e->key() == Qt::Key_Alt ||
+        e->key() == Qt::Key_AltGr )
+        return;
+   
+    if( ( e->modifiers() &  Qt::ControlModifier ) || ( e->modifiers() &  Qt::AltModifier ) || ( e->modifiers() &  Qt::ShiftModifier ) )
+    {
+    	int i_vlck = qtEventToVLCKey( e );
+    	selected->setText( qtr( "Key: " ) + VLCKeyToString( i_vlck ) );
+    	checkForConflicts( i_vlck );
+    	keyValue = i_vlck;
+    }
+    
+}
+
+void transcribeKeyInputDialog::wheelEvent( QWheelEvent *e )
+{
+    int i_vlck = qtWheelEventToVLCKey( e );
+    selected->setText( qtr( "Key: " ) + VLCKeyToString( i_vlck ) );
+    checkForConflicts( i_vlck );
+    keyValue = i_vlck;
+}
+
+transcribeKeySelectorControl::transcribeKeySelectorControl( vlc_object_t *_p_this,
+                                      module_config_t *_p_item,
+                                      QWidget *_parent, QGridLayout *l,
+                                      int &line ) :
+                                ConfigControl( _p_this, _p_item, _parent )
+
+{
+    QWidget *keyContainer = new QWidget;
+    QGridLayout *gLayout = new QGridLayout( keyContainer );
+
+    label = new QLabel(
+            qtr( "Select an action to change the associated hotkey") );
+ 
+    /* Deactivated for now
+    QLabel *searchLabel = new QLabel( qtr( "Search" ) );
+    QLineEdit *actionSearch = new QLineEdit;*/
+
+    table = new QTreeWidget;
+    table->setColumnCount(2);
+    table->headerItem()->setText( 0, qtr( "Action" ) );
+    table->headerItem()->setText( 1, qtr( "Shortcut" ) );
+
+    shortcutValue = new KeyShortcutEdit;
+    shortcutValue->setReadOnly(true);
+
+    QPushButton *clearButton = new QPushButton( qtr( "Clear" ) );
+    QPushButton *setButton = new QPushButton( qtr( "Set" ) );
+    setButton->setDefault( true );
+    finish();
+
+    gLayout->addWidget( label, 0, 0, 1, 4 );
+  /* deactivated for now
+    gLayout->addWidget( searchLabel, 1, 0, 1, 2 );
+    gLayout->addWidget( actionSearch, 1, 2, 1, 2 ); */
+    gLayout->addWidget( table, 2, 0, 1, 4 );
+    gLayout->addWidget( clearButton, 3, 0, 1, 1 );
+    gLayout->addWidget( shortcutValue, 3, 1, 1, 2 );
+    gLayout->addWidget( setButton, 3, 3, 1, 1 );
+
+    l->addWidget( keyContainer, line, 0, 1, 2 );
+
+    CONNECT( clearButton, clicked(), shortcutValue, clear() );
+    CONNECT( clearButton, clicked(), this, setTheKey() );
+    BUTTONACT( setButton, setTheKey() );
+}
+/*
+void transcribeKeySelectorControl::finish()
+{
+ 
+    table->setColumnCount( 2 );
+    table->setAlternatingRowColors( true );
+
+    module_t *p_main = module_Find( p_this, "main" );
+    assert( p_main );
+
+    unsigned confsize;
+    module_config_t *p_config;
+
+    p_config = module_GetConfig (p_main, &confsize);
+	int j = 0;
+    for (size_t i = 0; i < confsize; i++)
+    {
+        module_config_t *p_item = p_config + i;
+        if( p_item->i_type & CONFIG_ITEM && p_item->psz_name
+            && strstr( p_item->psz_name , "trans-" )
+            && !EMPTY_STR( p_item->psz_text ) )
+        {
+            j++;
+        }
+    }
+    QString keys = "trans-play";
+    if (j==0)
+    {
+    	  config_PutInt( p_this,
+                           qtu( keys ),
+                           65 );
+    }
+    qDebug("j : %d",j);
+    for (size_t i = 0; i < confsize; i++)
+    {
+        module_config_t *p_item = p_config + i;
+
+        if( p_item->i_type & CONFIG_ITEM && p_item->psz_name
+            && strstr( p_item->psz_name , "trans-" )
+            && !EMPTY_STR( p_item->psz_text ) )
+        {
+            QTreeWidgetItem *treeItem = new QTreeWidgetItem();
+            treeItem->setText( 0, qtr( p_item->psz_text ) );
+            treeItem->setData( 0, Qt::UserRole,
+                               QVariant( qfu( p_item->psz_name ) ) );
+            treeItem->setText( 1, VLCKeyToString( p_item->value.i ) );
+            treeItem->setData( 1, Qt::UserRole, QVariant( p_item->value.i ) );
+            table->addTopLevelItem( treeItem );
+        }
+    }
+    module_PutConfig (p_config);
+    module_Put (p_main);
+
+    table->resizeColumnToContents( 0 );
+
+    CONNECT( table, itemDoubleClicked( QTreeWidgetItem *, int ),
+             this, selectKey( QTreeWidgetItem * ) );
+    CONNECT( table, itemSelectionChanged (),
+             this, select1Key() );
+
+    CONNECT( shortcutValue, pressed(), this, selectKey() );
+}
+*/
+
+void transcribeKeySelectorControl::finish()
+{
+ 
+    table->setColumnCount( 2 );
+    table->setAlternatingRowColors( true );
+     
+QSettings settings("Bungeni", "transcribe");
+     QStringList keys = settings.childKeys();
+     keys = settings.childKeys();
+     for (int i = 0; i < keys.size(); ++i)
+     {
+            QTreeWidgetItem *treeItem = new QTreeWidgetItem();
+            treeItem->setText( 0, keys.at(i) );
+            treeItem->setData( 0, Qt::UserRole, QVariant(keys.at(i)) );
+            treeItem->setText( 1, VLCKeyToString( settings.value(keys.at(i)).toInt() ));
+            treeItem->setData( 1, Qt::UserRole, QVariant( settings.value(keys.at(i)) ) );
+            table->addTopLevelItem( treeItem );   
+    }
+
+
+    table->resizeColumnToContents( 0 );
+
+    CONNECT( table, itemDoubleClicked( QTreeWidgetItem *, int ),
+             this, selectKey( QTreeWidgetItem * ) );
+    CONNECT( table, itemSelectionChanged (),
+             this, select1Key() );
+
+    CONNECT( shortcutValue, pressed(), this, selectKey() );
+}
+
+/* Show the key selected from the table in the keySelector */
+void transcribeKeySelectorControl::select1Key()
+{
+    QTreeWidgetItem *keyItem = table->currentItem();
+    shortcutValue->setText( keyItem->text( 1 ) );
+    shortcutValue->setValue( keyItem->data( 1, Qt::UserRole ).toInt() );
+}
+
+void transcribeKeySelectorControl::selectKey( QTreeWidgetItem *keyItem )
+{
+    /* This happens when triggered by ClickEater */
+    if( keyItem == NULL ) keyItem = table->currentItem();
+
+    /* This can happen when nothing is selected on the treeView
+       and the shortcutValue is clicked */
+    if( !keyItem ) return;
+
+    /* Launch a small dialog to ask for a new key */
+    transcribeKeyInputDialog *d = new transcribeKeyInputDialog( table, keyItem->text( 0 ), widget );
+    d->exec();
+
+    if( d->result() == QDialog::Accepted )
+    {
+        int newValue = d->keyValue;
+        shortcutValue->setText( VLCKeyToString( newValue ) );
+        shortcutValue->setValue( newValue );
+
+        if( d->conflicts )
+        {
+            QTreeWidgetItem *it;
+            for( int i = 0; i < table->topLevelItemCount() ; i++ )
+            {
+                it = table->topLevelItem(i);
+                if( ( keyItem != it )
+                        && ( it->data( 1, Qt::UserRole ).toInt() == newValue ) )
+                {
+                    it->setData( 1, Qt::UserRole, QVariant( -1 ) );
+                    it->setText( 1, qtr( "Unset" ) );
+                }
+            }
+            /* We already made an OK once. */
+            setTheKey();
+        }
+    }
+    delete d;
+}
+
+void transcribeKeySelectorControl::setTheKey()
+{
+    table->currentItem()->setText( 1, shortcutValue->text() );
+    table->currentItem()->setData( 1, Qt::UserRole, shortcutValue->getValue() );
+}
+
+void transcribeKeySelectorControl::doApply()
+{
+    QTreeWidgetItem *it;
+    QSettings settings("Bungeni", "transcribe");
+    for( int i = 0; i < table->topLevelItemCount() ; i++ )
+    {
+        it = table->topLevelItem(i);
+        if( it->data( 1, Qt::UserRole ).toInt() >= 0 )
+            settings.setValue( it->data( 0, Qt::UserRole ).toString() , it->data( 1, Qt::UserRole ).toInt() );
+    }
+}
