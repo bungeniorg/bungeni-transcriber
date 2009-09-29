@@ -1,0 +1,45 @@
+/*
+ * controlsWidget.hpp
+ * This file is part of <program name>
+ *
+ * Copyright (C) 2009 - miano
+ *
+ * <program name> is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ *
+ * <program name> is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with <program name>; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin St, Fifth Floor, 
+ * Boston, MA  02110-1301  USA
+ */
+
+#include "ui/ui_controls.h" 
+
+class ControlsWidget : public QWidget
+{
+    Q_OBJECT
+public:
+    ControlsWidget();
+    ~ControlsWidget();
+private:
+    Ui::Controls ui;
+protected slots:
+    void play();
+    void stop();
+    void prev();
+    void next();
+    /*
+    void updateVolume( int );
+    void updateVolume( void );
+    void updateInput();
+    void faster();
+    void slower();
+    */
+};
