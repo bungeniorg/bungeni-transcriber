@@ -4,34 +4,13 @@
 
 Bungeni Transcribe has been developed and tested only on Ubuntu 9.04 and may not compile/run on other operating systems. Support for Windows will be added as soon as the project is stable.
 
-TO DO - Test!!!!
 = Steps =
 
-== Install dependencies ==
-    Bungeni Transcribe is built on libvlc and Qt so dev packages must be installed in order to compile the application.
  {{{
-sudo apt-get install libvlc-dev libqt4-dev
-}}}
-
-== Check out Bungeni Transcribe code from svn ==
-    Install SVN if it is not installed on your system
-{{{
-sudo apt-get install subversion
-}}}
-    Checkout code
-{{{
-svn checkout http://bungeni-transcriber.googlecode.com/svn/trunk/ bungeni-transcriber-read-only
-}}}
-
-== Compile ==
-{{{
-cd bungeni-transcriber-read-only
+sudo apt-get install libvlc-dev libqt4-dev subversion
+sudo apt-get build-dep vlc
+svn checkout http://bungeni-transcriber.googlecode.com/svn/trunk/ bungeni-transcriber
+cd bungeni-transcriber
 make
-}}}
-
-TO DO - Add make install!!!!
-
-== Run ==
-{{{
 ./transcribe
 }}}
