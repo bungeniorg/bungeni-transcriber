@@ -6,5 +6,8 @@
      <file>pixmaps/play.png</file>
      <file>pixmaps/previous.png</file>
      <file>pixmaps/next.png</file>
+     <file>pixmaps/add.png</file>
+     <file>pixmaps/remove.png</file>
+     <file>pixmaps/pause.png</file>
  </qresource>
  </RCC>

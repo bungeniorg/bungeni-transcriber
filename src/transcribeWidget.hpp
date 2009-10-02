@@ -46,7 +46,6 @@
 #include <QInputEvent>
 
 #include <vlc.h>
-#include <libvlc.h>
 
 #include "ui/ui_transcribe.h"
 #include "ListViewDelegate.hpp"
@@ -54,8 +53,7 @@
 #include "ui/ui_uploadProgress.h"
 #include "network/formpost.hpp"
 #include "controlsWidget.hpp"
-
-#define POSITION_RESOLUTION 10000
+#include "playlistWidget.hpp"
 
 class TranscribeWidget : public QMainWindow
 {
@@ -64,7 +62,6 @@ class TranscribeWidget : public QMainWindow
         TranscribeWidget();
         ~TranscribeWidget();
         QFrame * video;
-        void playFile(QString file);
         void raise(libvlc_exception_t * ex);
     public slots:  
         void addSpeech();
@@ -85,6 +82,9 @@ class TranscribeWidget : public QMainWindow
         void updateInterface();
         void changeVolume(int newVolume);
         void changePosition(int newPosition);
+        void playFile(QString file);
+        void play();
+        void stop();
     private:
         Ui::Transcribe ui;
         bool _isPlaying;
@@ -92,6 +92,7 @@ class TranscribeWidget : public QMainWindow
         libvlc_instance_t *_vlcinstance;
         libvlc_media_player_t *_mp;
         libvlc_media_t *_m;
+        libvlc_time_t _file_duration;
         QTableView *table;
         QVBoxLayout *mainLayout;
         QPushButton *addButton;
@@ -119,12 +120,11 @@ class TranscribeWidget : public QMainWindow
         bool loadFile(QString newfileName);
         void createActions();
         void createMenus();
-
+        PlaylistWidget *playlist;
         QMenu *fileMenu;
         QMenu *editMenu;
         QMenu *helpMenu;
-        QAction *newAct;
-        QAction *openAct;
+        QAction *addToPlaylistAct;
         QAction *saveAct;
         QAction *saveAsAct;
         QAction *getTakesAct;
@@ -139,7 +139,7 @@ class TranscribeWidget : public QMainWindow
         int qtKeyModifiersToVLC( QInputEvent* e );
         */
         //void keyPressEvent( QKeyEvent *e );
-        
+        QString currentMediaFile;
         ControlsWidget *controls;
 };
 

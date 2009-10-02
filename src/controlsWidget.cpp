@@ -26,12 +26,6 @@
  
 #include "controlsWidget.hpp" 
 
-#define setupSmallButton( aButton ){  \
-    aButton->setMaximumSize( QSize( 26, 26 ) ); \
-    aButton->setMinimumSize( QSize( 26, 26 ) ); \
-    aButton->setIconSize( QSize( 20, 20 ) ); \
-    aButton->setFocusPolicy( Qt::NoFocus ); \
-}
 
 ControlsWidget::ControlsWidget()
 {
@@ -88,6 +82,13 @@ ControlsWidget::ControlsWidget()
     ui.next->setSizePolicy( sizePolicy );
     setupSmallButton( ui.next );
     ui.next->setIcon(QIcon(":/pixmaps/next.png"));
+    
+    ui.positionSlider->setMaximum(POSITION_RESOLUTION);
+    
+    QObject::connect( ui.stop, SIGNAL(clicked()), this, SLOT(stop()));
+    QObject::connect( ui.prev, SIGNAL(clicked()), this, SLOT(prev()));
+    QObject::connect( ui.play, SIGNAL(clicked()), this, SLOT(play()));
+    QObject::connect( ui.next, SIGNAL(clicked()), this, SLOT(next()));
 }
 
 ControlsWidget::~ControlsWidget()
@@ -97,18 +98,44 @@ ControlsWidget::~ControlsWidget()
 
 void ControlsWidget::stop()
 {
+    emit stopSignal();
 }
 
 void ControlsWidget::play()
 {
+    emit playSignal();
 }
 
 void ControlsWidget::prev()
 {
+    emit prevSignal();
 }
 
 void ControlsWidget::next()
 {
+    emit nextSignal();
 }
 
+void ControlsWidget :: changeIcon(bool playing)
+{
+    if (playing)
+    {
+        ui.play->setIcon(QIcon(":/pixmaps/pause.png"));
+    }
+    else
+    {
+        ui.play->setIcon(QIcon(":/pixmaps/play.png"));
+    }
+}
+
+//Duration of currently playing file in seconds
+void ControlsWidget::setDuration(int sec)
+{
+    ui.positionSlider->setMaximum(sec);
+}
+
+void ControlsWidget::updateSlider(int pos)
+{
+    ui.positionSlider->setSliderPosition(pos);
+}
 
