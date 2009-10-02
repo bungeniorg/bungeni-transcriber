@@ -21,13 +21,22 @@
  */
 
 #include "ui/ui_controls.h" 
-
+#define setupSmallButton( aButton ){  \
+    aButton->setMaximumSize( QSize( 26, 26 ) ); \
+    aButton->setMinimumSize( QSize( 26, 26 ) ); \
+    aButton->setIconSize( QSize( 20, 20 ) ); \
+    aButton->setFocusPolicy( Qt::NoFocus ); \
+}
+#define POSITION_RESOLUTION 1000
 class ControlsWidget : public QWidget
 {
     Q_OBJECT
 public:
     ControlsWidget();
     ~ControlsWidget();
+    void changeIcon(bool playing);
+    void setDuration(int sec);
+    void updateSlider(int pos);
 private:
     Ui::Controls ui;
 protected slots:
@@ -42,4 +51,9 @@ protected slots:
     void faster();
     void slower();
     */
+signals:
+    void playSignal();
+    void stopSignal();
+    void prevSignal();
+    void nextSignal();
 };

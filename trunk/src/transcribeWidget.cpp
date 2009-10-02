@@ -41,7 +41,6 @@
 #include <QWheelEvent>
 #include "transcribeWidget.hpp"
 
-
 TranscribeWidget::TranscribeWidget() : QMainWindow()
 {
     //Setup UI 
@@ -75,6 +74,16 @@ TranscribeWidget::TranscribeWidget() : QMainWindow()
     controls = new ControlsWidget();
     ui.gridLayout_2->addWidget(controls, 1, 0, 1, 3);
     
+    playlist = new PlaylistWidget();
+    ui.gridLayout_2->addWidget(playlist, 2, 0, 1, 3);
+    
+    currentMediaFile = "";
+    
+    QObject::connect( playlist, SIGNAL(playMediaFile(QString)), this, SLOT(playFile(QString)));
+    QObject::connect( controls, SIGNAL(playSignal()), this, SLOT(play()));
+    QObject::connect( controls, SIGNAL(stopSignal()), this, SLOT(stop()));
+    QObject::connect( controls, SIGNAL(nextSignal()), playlist, SLOT(next()));
+    QObject::connect( controls, SIGNAL(prevSignal()), playlist, SLOT(prev()));
     this->createActions();
     this->createMenus();
     
@@ -103,6 +112,8 @@ TranscribeWidget::TranscribeWidget() : QMainWindow()
     
 }
 
+
+
 TranscribeWidget::~TranscribeWidget()
 {
     /* Stop playing */
@@ -113,6 +124,53 @@ TranscribeWidget::~TranscribeWidget()
 
     libvlc_release (_vlcinstance);
     raise (&_vlcexcep);
+}
+
+void TranscribeWidget :: stop()
+{
+    /* Stop playing */
+    libvlc_media_player_stop (_mp, &_vlcexcep);
+    raise(&_vlcexcep);
+    /* Free the media_player */
+   // libvlc_media_player_release (_mp);
+    qDebug() << currentMediaFile;
+    _isPlaying = false;
+    controls->changeIcon(false);
+}
+
+
+void TranscribeWidget::play()
+{
+    qDebug() << currentMediaFile;
+    //if (currentMediaFile != "")
+    //{
+     //   playFile(currentMediaFile);
+    //}
+    qDebug() << "is playing(Before)" << _isPlaying;
+    if (currentMediaFile != "")
+    {
+        qDebug() << "Enter current file != NULL ";
+        if ( _isPlaying == true )
+        {
+            libvlc_media_player_pause (_mp, &_vlcexcep);
+            raise(&_vlcexcep);
+            controls->changeIcon(false);
+            _isPlaying = false;
+        }
+        else
+        {
+            libvlc_media_player_play (_mp, &_vlcexcep );
+            raise(&_vlcexcep);
+            
+            _file_duration = libvlc_media_player_get_length( _mp, &_vlcexcep);
+            raise(&_vlcexcep);
+            
+            _isPlaying = true;
+            controls->changeIcon(true);
+        }
+    }
+    qDebug() << "is playing(after)" << _isPlaying;
+
 }
 
 void TranscribeWidget::playFile(QString file)
@@ -129,7 +187,12 @@ void TranscribeWidget::playFile(QString file)
     [cdda://][device]              Audio CD device
     udp:[[<source address>]@[<bind address>][:<bind port>]]
     */
-
+    qDebug() << file;
+    
+    currentMediaFile = file;
+    
+    
+    
     /* Create a new LibVLC media descriptor */
     _m = libvlc_media_new (_vlcinstance, file.toAscii(), &_vlcexcep);
     raise(&_vlcexcep);
@@ -160,7 +223,15 @@ void TranscribeWidget::playFile(QString file)
     libvlc_media_player_play (_mp, &_vlcexcep );
     raise(&_vlcexcep);
 
+
+     _file_duration = libvlc_media_player_get_length( _mp, &_vlcexcep);
+     raise(&_vlcexcep);
+     
+    // qDebug() << "file duartion" << _file_duration;
+     //controls->setDuration(_file_duration);
+     
     _isPlaying=true;
+    controls->changeIcon(true);
 }
 
 void TranscribeWidget::changeVolume(int newVolume)
@@ -198,8 +269,12 @@ void TranscribeWidget::updateInterface()
         return;
 
     float pos=libvlc_media_player_get_position (_mp, &_vlcexcep);
-   // int siderPos=(int)(pos*(float)(POSITION_RESOLUTION));
+    
+    
+    //qDebug() << "Update Interface" << _file_duration;
+    int siderPos=(int)(pos*(float)(POSITION_RESOLUTION));
    // ui.positionSlider->setValue(siderPos);
+   controls->updateSlider(siderPos);
     
 }
 
@@ -999,8 +1074,7 @@ QString VLCKeyToString( int val )
 void TranscribeWidget::createMenus()
 {
      fileMenu = menuBar()->addMenu("&File");
-     fileMenu->addAction(newAct);
-     fileMenu->addAction(openAct);
+     fileMenu->addAction(addToPlaylistAct);
      fileMenu->addSeparator();
      fileMenu->addAction(saveAct);
      fileMenu->addAction(saveAsAct);
@@ -1020,15 +1094,10 @@ void TranscribeWidget::createMenus()
 
 void TranscribeWidget::createActions()
  {
-     newAct = new QAction("&New", this);
-     newAct->setShortcuts(QKeySequence::New);
-     newAct->setStatusTip("Create a new file");
-     connect(newAct, SIGNAL(triggered()), this, SLOT(newFile()));
-
-     openAct = new QAction("&Open...", this);
-     openAct->setShortcuts(QKeySequence::Open);
-     openAct->setStatusTip("Open an existing file");
-     connect(openAct, SIGNAL(triggered()), this, SLOT(open()));
+     addToPlaylistAct = new QAction("&Add to Playlist", this);
+     addToPlaylistAct->setShortcuts(QKeySequence::New);
+     addToPlaylistAct->setStatusTip("Add an existing or new item to playlist");
+     connect(addToPlaylistAct, SIGNAL(triggered()), playlist, SLOT(addToPlaylistDialog()));
 
      saveAct = new QAction("&Save", this);
      saveAct->setShortcuts(QKeySequence::Save);
