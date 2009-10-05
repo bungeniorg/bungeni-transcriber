@@ -27,7 +27,7 @@
  
 
 
-#include "ListViewDelegate.hpp"
+#include "listViewDelegate.hpp"
 #include "inplaceEditor.hpp"
 
 #include <QString>

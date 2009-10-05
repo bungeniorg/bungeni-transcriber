@@ -40,7 +40,7 @@
 #include <QKeyEvent>
 #include <QWheelEvent>
 #include "transcribeWidget.hpp"
-
+#include "about.hpp"
 TranscribeWidget::TranscribeWidget() : QMainWindow()
 {
     //Setup UI 
@@ -1128,4 +1128,10 @@ void TranscribeWidget::createActions()
      aboutAct = new QAction("&About", this);
      aboutAct->setStatusTip("Show the application's About box");
      connect(aboutAct, SIGNAL(triggered()), this, SLOT(about()));
+}
+
+void TranscribeWidget::about()
+{
+    aboutWidget *about = new aboutWidget();
+    about->show(); 
 }
