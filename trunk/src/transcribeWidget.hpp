@@ -48,7 +48,7 @@
 #include <vlc.h>
 
 #include "ui/ui_transcribe.h"
-#include "ListViewDelegate.hpp"
+#include "listViewDelegate.hpp"
 #include "qxtspanslider/qxtspanslider.h"
 #include "ui/ui_uploadProgress.h"
 #include "network/formpost.hpp"
@@ -85,6 +85,7 @@ class TranscribeWidget : public QMainWindow
         void playFile(QString file);
         void play();
         void stop();
+        void about();
     private:
         Ui::Transcribe ui;
         bool _isPlaying;
