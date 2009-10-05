@@ -86,6 +86,7 @@ class TranscribeWidget : public QMainWindow
         void play();
         void stop();
         void about();
+        void hotkeySettings();
     private:
         Ui::Transcribe ui;
         bool _isPlaying;
@@ -133,6 +134,7 @@ class TranscribeWidget : public QMainWindow
         QAction *preferencesAct;
         QAction *exitAct;
         QAction *aboutAct;
+        QAction *hotkeyAct;
         /*
         QString VLCKeyToString( int val );
         int qtWheelEventToVLCKey( QWheelEvent *e );
