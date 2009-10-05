@@ -41,6 +41,8 @@
 #include <QWheelEvent>
 #include "transcribeWidget.hpp"
 #include "about.hpp"
+#include "hotkeyWidget.hpp"
+
 TranscribeWidget::TranscribeWidget() : QMainWindow()
 {
     //Setup UI 
@@ -1086,7 +1088,8 @@ void TranscribeWidget::createMenus()
 
      editMenu = menuBar()->addMenu("&Edit");
      editMenu->addAction(preferencesAct);
-
+     editMenu->addAction(hotkeyAct);
+     
      helpMenu = menuBar()->addMenu("&Help");
      helpMenu->addAction(aboutAct);
 }
@@ -1112,6 +1115,10 @@ void TranscribeWidget::createActions()
      preferencesAct->setStatusTip("Bungeni Transcribe Preferences");
      connect(preferencesAct, SIGNAL(triggered()), this, SLOT(preferences()));
      
+     hotkeyAct = new QAction("Hotkey Settings", this);
+     hotkeyAct->setStatusTip("Hotkey Settings");
+     connect(hotkeyAct, SIGNAL(triggered()), this, SLOT(hotkeySettings()));
+     
      getTakesAct = new QAction("Get Takes", this);
      getTakesAct->setStatusTip("Get Assigned Takes from Bungeni Portal Server");
      connect(getTakesAct, SIGNAL(triggered()), this, SLOT(getTakes()));
@@ -1128,7 +1135,19 @@ void TranscribeWidget::createActions()
      aboutAct = new QAction("&About", this);
      aboutAct->setStatusTip("Show the application's About box");
      connect(aboutAct, SIGNAL(triggered()), this, SLOT(about()));
+     
+     
 }
+
+void TranscribeWidget::hotkeySettings()
+{
+    HotkeyWidget *hotkey = new HotkeyWidget();
+    //qDebug() << "Hotkey";
+    qDebug() << "Hotkey";
+    hotkey->show(); 
+    
+}
+
 
 void TranscribeWidget::about()
 {
