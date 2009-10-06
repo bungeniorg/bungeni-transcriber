@@ -3,8 +3,8 @@
 ######################################################################
 
 #INCLUDEPATH for libvlc on Ubuntu. May be different on other distros
-INCLUDEPATH = /usr/include/vlc
-LIBS += -lvlc
+INCLUDEPATH = /usr/include/vlc /usr/include/taglib
+LIBS += -lvlc -ltag
 
 HEADERS +=  src/transcribeWidget.hpp \
             src/controlsWidget.hpp \
@@ -16,13 +16,19 @@ HEADERS +=  src/transcribeWidget.hpp \
             src/addToPlaylistWidget.hpp \
             src/qxtspanslider/qxtspanslider_p.h \
             src/qxtspanslider/qxtspanslider.h \
-            src/about.hpp
+            src/about.hpp \
+            src/hotkeyWidget.hpp \
+            src/util/vlc_keys.h \
+            src/util/util.hpp \
+            src/settings.hpp \
+            src/transcribeKeySelector.hpp
 FORMS   +=  src/ui/transcribe.ui \
             src/ui/inplace_editor.ui \
             src/ui/uploadProgress.ui \
             src/ui/controls.ui \
             src/ui/addToPlaylist.ui \
-            src/ui/about.ui
+            src/ui/about.ui \
+            src/ui/serverSettings.ui
 SOURCES +=  src/transcribeWidget.cpp \
             src/controlsWidget.cpp \
             src/main.cpp \
@@ -33,7 +39,11 @@ SOURCES +=  src/transcribeWidget.cpp \
             src/network/formpost.cpp \
             src/addToPlaylistWidget.cpp \
             src/qxtspanslider/qxtspanslider.cpp \
-            src/about.cpp
+            src/about.cpp \
+            src/hotkeyWidget.cpp \
+            src/util/util.cpp \
+            src/settings.cpp \
+            src/transcribeKeySelector.cpp 
 UI_DIR      =  src/ui/
 RESOURCES   =  src/resources.qrc           
 CONFIG  +=  qt debug
