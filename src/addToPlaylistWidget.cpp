@@ -30,6 +30,7 @@
 AddToPlaylistWidget :: AddToPlaylistWidget() : QDialog()
 {
     ui.setupUi(this);
+    this->setModal(true);
     QObject::connect( ui.addNewGroupBox, SIGNAL(clicked(bool)), this, SLOT(addNewGroupBoxProceessChecked(bool)));
     QObject::connect( ui.addExistingGroupBox, SIGNAL(clicked(bool)), this, SLOT(addExistingGroupBoxProceessChecked(bool)));
     QObject::connect( ui.locateExistingButton, SIGNAL(clicked()), this, SLOT(locateExistingPathSlot()));

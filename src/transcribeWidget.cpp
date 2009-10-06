@@ -42,7 +42,13 @@
 #include "transcribeWidget.hpp"
 #include "about.hpp"
 #include "hotkeyWidget.hpp"
+#include "settings.hpp"
 
+//Use taglib for now since libvlc doesnt get correct file length
+//TO DO : Remove
+#include <taglib/tag.h>
+#include <taglib/fileref.h>
+#include <taglib/tfile.h>
 TranscribeWidget::TranscribeWidget() : QMainWindow()
 {
     //Setup UI 
@@ -61,7 +67,7 @@ TranscribeWidget::TranscribeWidget() : QMainWindow()
               "-I", "dummy", /* Don't use any interface */
               "--ignore-config", /* Don't use VLC's config */
               "--extraintf=logger", //log anything
-              "--verbose=2", //be much more verbose then normal for debugging purpose
+             // "--verbose=2", //be much more verbose then normal for debugging purpose
               "--plugin-path=/home/miano/Work/vlc-0.9.10/modules/" };
 
     video=new QFrame(this);
@@ -82,6 +88,7 @@ TranscribeWidget::TranscribeWidget() : QMainWindow()
     currentMediaFile = "";
     
     QObject::connect( playlist, SIGNAL(playMediaFile(QString)), this, SLOT(playFile(QString)));
+    QObject::connect( playlist, SIGNAL(playMediaFile(QString)), this, SLOT(loadMetaData(QString)));
     QObject::connect( controls, SIGNAL(playSignal()), this, SLOT(play()));
     QObject::connect( controls, SIGNAL(stopSignal()), this, SLOT(stop()));
     QObject::connect( controls, SIGNAL(nextSignal()), playlist, SLOT(next()));
@@ -175,6 +182,34 @@ void TranscribeWidget::play()
 
 }
 
+/** Converts a Qt4 QString to a TagLib::String. */
+#define Qt4QStringToTString(s) TagLib::String(s.toUtf8().data(), TagLib::String::UTF8)
+
+
+void TranscribeWidget::loadMetaData(QString file)
+{
+    /*
+    QByteArray fileName = QFile::encodeName( file );
+    const char * encodedName = fileName.constData();
+    TagLib::FileRef fileref = TagLib::FileRef( encodedName, false );
+    if (fileref.isNull())
+    {
+       qDebug() << "Null";
+    }
+    else
+    {
+       qDebug() << "Not Null";
+    }
+    */
+    _file_duration = libvlc_media_player_get_length( _mp, &_vlcexcep);
+     raise(&_vlcexcep);
+     qDebug() << "file duration = " << _file_duration ;
+     
+}
+
+
+
+
 void TranscribeWidget::playFile(QString file)
 {
     //the file has to be in one of the following formats /perhaps a little bit outdated)
@@ -226,12 +261,62 @@ void TranscribeWidget::playFile(QString file)
     raise(&_vlcexcep);
 
 
-     _file_duration = libvlc_media_player_get_length( _mp, &_vlcexcep);
-     raise(&_vlcexcep);
+     
      
     // qDebug() << "file duartion" << _file_duration;
      //controls->setDuration(_file_duration);
      
+     //get file duration using taglib since libvlc sucks
+     
+   //  std::String filePath = file.toStdString ();
+     //char * filePath;
+     
+    // filePath = new char [file.size()+1];
+    // strcpy (filePath, file.toStdString().c_str());
+
+    // qDebug() << filePath;
+     
+    // TagLib::FileRef f(filePath);
+   //  this->currentFileDuration = f.file()->length(); 
+    
+     //  TagLib::FileRef f(filePath);
+     //  if (!f.isNull())
+      //      TagLib::String artist = f.tag()->artist();      
+    //
+     //qDebug() << "Artist" << QString(artist.toCString());
+     
+     /*
+     
+    #ifdef Q_OS_WIN
+        const wchar_t * encodedName = reinterpret_cast<const wchar_t*>(file.utf16());
+    #else
+        const char * encodedName = QFile::encodeName(file).constData();
+    #endif
+
+    TagLib::FileRef fileRef(encodedName); 
+     qDebug() << encodedName;
+     if (!fileRef.isNull())
+     {
+       //TagLib::String artist = f.tag()->artist(); 
+       qDebug() << "Not Null";
+     }
+     else
+     {
+        qDebug() << "Null";
+     }
+     */
+     
+     
+   // TagLib::String str(Qt4QStringToTString(file));
+    //TagLib::FileRef fileRef(str.toCString());
+     
+    // long duration = fileRef.file()->length(); 
+    //    qDebug() << "duration = " << duration;
+     
+     //TagLib::Tag * tag = fileRef.tag(); 
+    // if (tag) {
+     //   if (!tag->isEmpty()) {
+     //           _title = TStringToQString(tag->title()).trimmed(); 
     _isPlaying=true;
     controls->changeIcon(true);
 }
@@ -1094,6 +1179,11 @@ void TranscribeWidget::createMenus()
      helpMenu->addAction(aboutAct);
 }
 
+void TranscribeWidget::preferences()
+{
+    SettingsDialog *settings = new SettingsDialog(this);
+    settings->show();
+}
 
 void TranscribeWidget::createActions()
  {
@@ -1105,11 +1195,11 @@ void TranscribeWidget::createActions()
      saveAct = new QAction("&Save", this);
      saveAct->setShortcuts(QKeySequence::Save);
      saveAct->setStatusTip("Save the document to disk");
-     connect(saveAct, SIGNAL(triggered()), this, SLOT(save()));
+     connect(saveAct, SIGNAL(triggered()), this, SLOT(saveFile()));
 
      saveAsAct = new QAction("Save As", this);
      saveAsAct->setStatusTip("Save the document to disk");
-     connect(saveAsAct, SIGNAL(triggered()), this, SLOT(saveAs()));
+     connect(saveAsAct, SIGNAL(triggered()), this, SLOT(saveFileAs()));
 
      preferencesAct = new QAction("Preferences", this);
      preferencesAct->setStatusTip("Bungeni Transcribe Preferences");
