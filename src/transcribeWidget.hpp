@@ -89,6 +89,11 @@ class TranscribeWidget : public QMainWindow
         void preferences();
         void hotkeySettings();
         void loadMetaData(QString);
+        void loadNextFileSlot(int currentLogicalIndex,QString newfileName);
+        void skipForward(int sec);
+        void skipBackward(int sec);
+        void playFaster();
+        void playSlower();
     private:
         Ui::Transcribe ui;
         bool _isPlaying;

@@ -72,15 +72,43 @@ void PlaylistWidget :: addItemToPlaylist()
        // model->setData(model->index(model->rowCount()-1, 1, QModelIndex()), startTime);
       //  model->setData(model->index(model->rowCount()-1, 2, QModelIndex()), endTime);
         model->setData(model->index(model->rowCount()-1, 1, QModelIndex()), mediaFileLocation);
+        //model->setData(model->index(model->rowCount()-1, 2, QModelIndex()), transcriptFileLocation);
     }
 }
 
 void PlaylistWidget :: play(int logicalIndex)
 {
     qDebug() << "doubleclick" << logicalIndex;
+    emit loadTranscriptFile(current, model->data(model->index(logicalIndex, 2)).toString());
+    
     current = logicalIndex;
     QString mediaFilePath = model->data(model->index(logicalIndex, 1)).toString();
+    
+    //if (model->data(model->index(logicalIndex, 2)).toString() != "")
+    
     emit playMediaFile(mediaFilePath);
+}
+//This is bad, very bad
+//TODO : FIX ME
+void PlaylistWidget :: setTranscriptFileLocation(QString transcriptFileLocation, int logicalIndex)
+{
+    qDebug() << "Current Logical Index is " << current;
+    if (logicalIndex < 0)
+        model->setData(model->index(current, 2, QModelIndex()), transcriptFileLocation);
+    else
+        model->setData(model->index(logicalIndex, 2, QModelIndex()), transcriptFileLocation);
+}
+
+int PlaylistWidget ::getSelected()
+{
+    if (model->rowCount()>0)
+    {
+        return current;
+    }
+    else
+    {
+        return -1;
+    }
 }
 
 void PlaylistWidget :: next()
@@ -105,7 +133,7 @@ void PlaylistWidget :: prev()
 
 void PlaylistWidget :: setupModelView()
 {
-    model = new QStandardItemModel(0,2,this);
+    model = new QStandardItemModel(0,3,this);
   /*
         0 - SittingName
         1 - StartDateTime
@@ -116,6 +144,7 @@ void PlaylistWidget :: setupModelView()
    // model->setHeaderData(1, Qt::Horizontal, "Start Date/Time");
    // model->setHeaderData(2, Qt::Horizontal, "End Date/Time");
     model->setHeaderData(1, Qt::Horizontal, "Media File");
+    //model->setHeaderData(1, Qt::Horizontal, "Media File");
     table = new QTableView(this);
 	table->setAlternatingRowColors(true);
     table->setModel(model);

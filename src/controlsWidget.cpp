@@ -89,6 +89,7 @@ ControlsWidget::ControlsWidget()
     QObject::connect( ui.prev, SIGNAL(clicked()), this, SLOT(prev()));
     QObject::connect( ui.play, SIGNAL(clicked()), this, SLOT(play()));
     QObject::connect( ui.next, SIGNAL(clicked()), this, SLOT(next()));
+    QObject::connect( ui.positionSlider, SIGNAL(sliderMoved(int)), this, SIGNAL(sliderMoved(int)));
 }
 
 ControlsWidget::~ControlsWidget()
@@ -131,7 +132,7 @@ void ControlsWidget :: changeIcon(bool playing)
 //Duration of currently playing file in seconds
 void ControlsWidget::setDuration(int sec)
 {
-    ui.positionSlider->setMaximum(sec);
+//    ui.positionSlider->setMaximum(sec);
 }
 
 void ControlsWidget::updateSlider(int pos)

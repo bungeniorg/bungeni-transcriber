@@ -56,4 +56,5 @@ signals:
     void stopSignal();
     void prevSignal();
     void nextSignal();
+    void sliderMoved(int);
 };
