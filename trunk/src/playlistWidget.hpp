@@ -49,6 +49,8 @@ class PlaylistWidget : public QWidget
     public:
         PlaylistWidget();
         ~PlaylistWidget();
+        void setTranscriptFileLocation(QString transcriptFileLocation, int logicalIndex);
+        int getSelected();
     private:
         QStandardItemModel *model;
         void setupModelView();
@@ -66,6 +68,7 @@ class PlaylistWidget : public QWidget
         void prev();
         void next();
     signals:
-        QString playMediaFile(QString mediaFilePath);
+        void playMediaFile(QString mediaFilePath);
+        void loadTranscriptFile(int currentLogicalIndex, QString transcriptFilePath);
 };
 #endif

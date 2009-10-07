@@ -89,6 +89,9 @@ TranscribeWidget::TranscribeWidget() : QMainWindow()
     
     QObject::connect( playlist, SIGNAL(playMediaFile(QString)), this, SLOT(playFile(QString)));
     QObject::connect( playlist, SIGNAL(playMediaFile(QString)), this, SLOT(loadMetaData(QString)));
+    
+    QObject::connect( playlist, SIGNAL(loadTranscriptFile(int,QString)), this, SLOT(loadNextFileSlot(int,QString)));
+    
     QObject::connect( controls, SIGNAL(playSignal()), this, SLOT(play()));
     QObject::connect( controls, SIGNAL(stopSignal()), this, SLOT(stop()));
     QObject::connect( controls, SIGNAL(nextSignal()), playlist, SLOT(next()));
@@ -113,7 +116,7 @@ TranscribeWidget::TranscribeWidget() : QMainWindow()
 
     //connect the two sliders to the corresponding slots (uses Qt's signal / slots technology)
     connect(poller, SIGNAL(timeout()), this, SLOT(updateInterface()));
-    //connect(ui.positionSlider, SIGNAL(sliderMoved(int)), this, SLOT(changePosition(int)));
+    connect(controls, SIGNAL(sliderMoved(int)), this, SLOT(changePosition(int)));
     
 
     poller->start(100); //start timer to trigger every 100 ms the updateInterface slot
@@ -181,6 +184,25 @@ void TranscribeWidget::play()
     qDebug() << "is playing(after)" << _isPlaying;
 
 }
+
+
+void TranscribeWidget::skipForward(int sec)
+{
+}
+
+void TranscribeWidget::skipBackward(int sec)
+{
+}
+void TranscribeWidget::playFaster()
+{
+}
+void TranscribeWidget::playSlower()
+{
+}
+
+
+
+
 
 /** Converts a Qt4 QString to a TagLib::String. */
 #define Qt4QStringToTString(s) TagLib::String(s.toUtf8().data(), TagLib::String::UTF8)
@@ -416,34 +438,41 @@ void TranscribeWidget::addSpeech()
 {
 	qDebug( "Add Transcript entered" );
 	int i_length = 200;
-	model->insertRows(model->rowCount(), 1, QModelIndex());
-	model->setData(model->index(model->rowCount()-1, 1, QModelIndex()), "Name of Person");
-    model->setData(model->index(model->rowCount()-1, 0, QModelIndex()), "Speech Text");
-    model->setData(model->index(model->rowCount()-1, 4, QModelIndex()), false);
-	if (model->rowCount() == 1)
-    {  
+	if (playlist->getSelected()>=0)
+	{
+	    model->insertRows(model->rowCount(), 1, QModelIndex());
+	    model->setData(model->index(model->rowCount()-1, 1, QModelIndex()), "Name of Person");
+        model->setData(model->index(model->rowCount()-1, 0, QModelIndex()), "Speech Text");
+        model->setData(model->index(model->rowCount()-1, 4, QModelIndex()), false);
+	    if (model->rowCount() == 1)
+        {  
       		    model->setData(model->index(0, 2, QModelIndex()), 0);
       		    if (i_length < 120)
      			    model->setData(model->index(0, 3, QModelIndex()), i_length);
      		    else
      			    model->setData(model->index(0, 3, QModelIndex()), 120);
      			qDebug( "model->rowCount() = 1" );
+        }
+        else
+        {
+     	    int end = model->data(model->index(model->rowCount()-2, 3, QModelIndex())).toInt();
+     	    if ((end+120) < i_length)
+     	    {
+     		    model->setData(model->index(model->rowCount()-1, 2, QModelIndex()), QVariant(end));
+			    model->setData(model->index(model->rowCount()-1, 3, QModelIndex()), QVariant(end+120));
+		    }
+		    else
+		    {
+			    model->setData(model->index(model->rowCount()-1, 2, QModelIndex()), QVariant(end));
+			    model->setData(model->index(model->rowCount()-1, 3, QModelIndex()), QVariant(i_length));
+		    }
+		    qDebug( "model->rowCount() > 1" );
+        }
     }
     else
     {
-     	int end = model->data(model->index(model->rowCount()-2, 3, QModelIndex())).toInt();
-     	if ((end+120) < i_length)
-     	{
-     		model->setData(model->index(model->rowCount()-1, 2, QModelIndex()), QVariant(end));
-			model->setData(model->index(model->rowCount()-1, 3, QModelIndex()), QVariant(end+120));
-		}
-		else
-		{
-			model->setData(model->index(model->rowCount()-1, 2, QModelIndex()), QVariant(end));
-			model->setData(model->index(model->rowCount()-1, 3, QModelIndex()), QVariant(i_length));
-		}
-		qDebug( "model->rowCount() > 1" );
-   }
+        QMessageBox::warning(this, tr("Error"),"Please add/select a file from the playlist");
+    }
 }
 
 
@@ -593,6 +622,7 @@ void TranscribeWidget::saveFileAs()
 	fileName = newfileName;
 	
 	this->writeFile(newfileName);
+	playlist->setTranscriptFileLocation(newfileName, -1);
 }
 void TranscribeWidget::openFile()
 {
@@ -603,11 +633,37 @@ void TranscribeWidget::openFile()
         QMessageBox::warning(this, tr("Error"),"Cannot Open File");
     }
 }
+
+void TranscribeWidget::loadNextFileSlot(int currentLogicalIndex, QString newfileName)
+{
+    qDebug() << "Load File Slot, newfilename = " << newfileName;
+    qDebug() << "Load File Slot, filename = " << fileName;
+    qDebug() << "Load File Slot, currentLogicalIndex = " << currentLogicalIndex;
+    if ((fileName == "") && (model->rowCount() > 0 ))
+    {
+	    QMessageBox::warning(this, tr("Error"),"Please save the current transcripts before loading another");
+        //this->saveFileAs();
+        QString f = QFileDialog::getSaveFileName(this, tr("File Save As"), "", tr("Transcript Files (*.trs);;Any File (*.*)"));
+	    playlist->setTranscriptFileLocation(f, currentLogicalIndex);
+	    this->writeFile(f);
+    }
+    else if (fileName != "")
+    {
+        this->writeFile(fileName);
+    }
+   
+    this->loadFile(newfileName);
+}
+
 bool TranscribeWidget::loadFile(QString newfileName)
 {
 	
 	if (newfileName == "")
-		return false;
+	{
+	    model->removeRows(0, model->rowCount(QModelIndex()), QModelIndex());
+	    fileName = newfileName;
+	    return true;
+	}
 	fileName = newfileName;
 	QFile newfile(newfileName);
 	if (!newfile.open(QFile::ReadOnly | QFile::Text)) {
