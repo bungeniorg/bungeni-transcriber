@@ -214,15 +214,19 @@ QString ListViewDelegate::timeSecondstoString(const int time) const
     InplaceEditor *editor = static_cast<InplaceEditor*>(editor_);
     model->setData(model->index( index.row() , 1), editor->getName());
     model->setData(model->index( index.row() , 4), editor->getComplete());
-    qDebug() << "Set Model data Complete = "<<editor->getComplete();
+    
     model->setData(model->index( index.row() , 0), editor->getSpeech());
     QTime time = editor->getStartTime();
+    qDebug() << "Set Model data - Start time = "<<time;
     int temp;
 	temp = time.hour() * 3600 + time.minute()*60 + time.second();
     model->setData(model->index( index.row() , 2), temp);
     time = editor->getEndTime();
+    qDebug() << "Set Model data - End time = "<<time;
     temp = time.hour() * 3600 + time.minute()*60 + time.second();
     model->setData(model->index( index.row() , 3), temp);
+    
+    
  }
  
  void ListViewDelegate::updateEditorGeometry(QWidget *editor,
