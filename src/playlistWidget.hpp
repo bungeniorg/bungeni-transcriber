@@ -51,6 +51,8 @@ class PlaylistWidget : public QWidget
         ~PlaylistWidget();
         void setTranscriptFileLocation(QString transcriptFileLocation, int logicalIndex);
         int getSelected();
+        QString getMediaLocation();
+        QString getSittingName();
     private:
         QStandardItemModel *model;
         void setupModelView();

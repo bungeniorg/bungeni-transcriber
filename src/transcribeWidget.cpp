@@ -688,7 +688,7 @@ bool TranscribeWidget::loadFile(QString newfileName)
 	    }
  	     
      	QString str; 
-     	QString person, startTimeTxt, endTimeTxt, mediaLocation;
+     	QString person, startTimeTxt, endTimeTxt;
      	QTime q_endTime, q_startTime;
      	model->removeRows(0, model->rowCount(QModelIndex()), QModelIndex());
 	    int i_startTime, i_endTime;
@@ -698,7 +698,7 @@ bool TranscribeWidget::loadFile(QString newfileName)
         	if (reader.name() == "trs")
         	{
         		mediaLocation = reader.attributes().value("media").toString();
-        		
+        		sittingName = reader.attributes().value("name").toString();
         	}
         	else if (reader.name() == "speech")
         	{	
@@ -783,6 +783,10 @@ bool TranscribeWidget::writeFile(QString fileName)
     writer.writeStartDocument();
     writer.writeDTD("<!DOCTYPE trs>");
     writer.writeStartElement("trs");
+    writer.writeAttribute("media", playlist->getMediaLocation());
+    qDebug() << "Media = " << playlist->getMediaLocation();
+    writer.writeAttribute("name", playlist->getSittingName());
+    qDebug() << "Sitting = " << playlist->getSittingName();
     for (int i = 0; i < model->rowCount(QModelIndex()); ++i)
     {
     	writer.writeStartElement("speech");

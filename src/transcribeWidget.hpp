@@ -143,6 +143,8 @@ class TranscribeWidget : public QMainWindow
         QAction *aboutAct;
         QAction *hotkeyAct;
         long currentFileDuration;
+        QString sittingName;
+        QString mediaLocation;
         /*
         QString VLCKeyToString( int val );
         int qtWheelEventToVLCKey( QWheelEvent *e );
