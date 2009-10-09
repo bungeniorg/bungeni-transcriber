@@ -213,7 +213,7 @@ void transcribeKeySelectorControl::finish()
     table->setColumnCount( 2 );
     table->setAlternatingRowColors( true );
      
-    QSettings settings("Bungeni", "transcribe");
+    QSettings settings("transcribe.conf", QSettings::IniFormat);
      settings.beginGroup("Hotkey");
      QStringList keys = settings.childKeys();
      keys = settings.childKeys();
@@ -294,7 +294,7 @@ void transcribeKeySelectorControl::setTheKey()
 void transcribeKeySelectorControl::doApply()
 {
     QTreeWidgetItem *it;
-    QSettings settings("Bungeni", "transcribe");
+    QSettings settings("transcribe.conf", QSettings::IniFormat);
     settings.beginGroup("Hotkey");
     for( int i = 0; i < table->topLevelItemCount() ; i++ )
     {

@@ -26,7 +26,9 @@
  
 #include "playlistWidget.hpp"
 #include <QDebug>
-
+#include <QXmlStreamReader>
+#include <QFile>
+#include <QMessageBox>
 PlaylistWidget :: PlaylistWidget() : QWidget()
 {
     this->setupModelView();
@@ -53,6 +55,39 @@ void PlaylistWidget :: addItemToPlaylist()
     {
         QString trsFileLocation = addToPlaylist->getTrsFileLocation();
         //read trs file, locate media file and add it to playlist
+        QFile newfile(trsFileLocation);
+        QString mediaLocation, sittingName;
+	    if (!newfile.open(QFile::ReadOnly | QFile::Text)) {
+        	QMessageBox::warning(this, tr("Error"),"The selected file could not be opened");
+    	}
+    	else
+    	{
+	        QXmlStreamReader reader;
+   	        reader.setDevice(&newfile);
+        
+            while (!reader.atEnd()) {
+                reader.readNext();
+        	    if (reader.name() == "trs")
+        	    {
+        		    mediaLocation = reader.attributes().value("media").toString();
+        		    sittingName = reader.attributes().value("name").toString();
+        		    break;
+                }
+        	}	    
+            if (mediaLocation != "")
+        	{
+        		 model->insertRows(model->rowCount(), 1, QModelIndex());
+	             model->setData(model->index(model->rowCount()-1, 0, QModelIndex()), sittingName);
+        		 model->setData(model->index(model->rowCount()-1, 1, QModelIndex()), mediaLocation);
+        		 model->setData(model->index(model->rowCount()-1, 2, QModelIndex()), trsFileLocation);
+        	}
+        	else
+        	{
+        		 QMessageBox::warning(this, tr("Error"),"The selected file does not specify a media file location");
+        	}
+        	
+            newfile.close();
+         }
     }
     else
     {

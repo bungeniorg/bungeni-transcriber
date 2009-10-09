@@ -39,7 +39,7 @@ customTextEdit::customTextEdit(QWidget *parent) : QTextEdit(parent)
 void customTextEdit::keyPressEvent( QKeyEvent *keyEvent )
 {
 /*
-    	QSettings settings("Bungeni", "transcribe");
+    	QSettings settings("transcribe.conf", QSettings::IniFormat);
      	QStringList keys = settings.childKeys();
      	int values[30];
      	int j=0, i=0;
@@ -115,6 +115,21 @@ void customTextEdit::keyPressEvent( QKeyEvent *keyEvent )
         {
             qDebug() << "ignore";
     	    keyEvent->ignore();
+        }
+    }
+    else if (keyEvent->modifiers() == Qt::ShiftModifier)
+    {
+        if( (keyEvent->key() >= Qt::Key_A) && (keyEvent->key() <= Qt::Key_Z) )
+        {
+            qDebug() << "accept";
+    	    QTextEdit::keyPressEvent(keyEvent);
+    	    keyEvent->accept();
+        }
+        else if( (keyEvent->key() >= Qt::Key_Space) && (keyEvent->key() <= Qt::Key_AsciiTilde) )
+        {
+            qDebug() << "accept";
+        	QTextEdit::keyPressEvent(keyEvent);
+    	    keyEvent->accept();
         }
     }
     else
