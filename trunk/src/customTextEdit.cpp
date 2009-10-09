@@ -97,6 +97,12 @@ void customTextEdit::keyPressEvent( QKeyEvent *keyEvent )
         	QTextEdit::keyPressEvent(keyEvent);
     	    keyEvent->accept();
         }
+        else if ((keyEvent->key() >= Qt::Key_Clear) && (keyEvent->key() <= Qt::Key_Down))
+        {
+            qDebug() << "accept";
+        	QTextEdit::keyPressEvent(keyEvent);
+    	    keyEvent->accept();
+        }
         else
         {
             qDebug() << "ignore";
