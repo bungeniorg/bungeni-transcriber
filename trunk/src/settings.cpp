@@ -5,9 +5,9 @@
 
 SettingsDialog::SettingsDialog(QWidget * parent ) : QDialog(parent)
 {
-    QSettings settings("Bungeni", "transcribe");
+    QSettings settings("transcribe.conf", QSettings::IniFormat);
     ui.setupUi(this);
-    settings.beginGroup("General");
+    settings.beginGroup("Network");
     QObject::connect(ui.buttonBox, SIGNAL( accepted() ), this, SLOT( saveData() ) );
     QObject::connect(ui.buttonBox, SIGNAL( rejected() ), this, SLOT( close() ) );
     ui.hostname->setText(settings.value("hostname").toString());
@@ -29,8 +29,8 @@ void SettingsDialog::saveData()
         QString port = ui.portnumber->text();
         QString username = ui.username->text();
         QString password = ui.password->text();
-        QSettings settings("Bungeni", "transcribe");
-        settings.beginGroup("General");
+        QSettings settings("transcribe.conf", QSettings::IniFormat);
+        settings.beginGroup("Network");
         //QStringList keys = settings.childKeys();
         settings.setValue("hostname", hostname);
         settings.setValue("port", port);

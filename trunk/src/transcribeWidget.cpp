@@ -875,10 +875,11 @@ qDebug() << string;
 
 FormPostPlugin * post = new FormPostPlugin();
 
-QSettings settings("Bungeni", "transcribe");
+QSettings settings("transcribe.conf", QSettings::IniFormat);
+settings.beginGroup("Network");
 QString str = "http://"+settings.value("hostname").toString()+"/mediawiki/index.php/Special:Speech_from_VLC";
 post->addField("string", string);
-
+settings.endGroup();
 QNetworkReply *reply = post->postData(str);
 
 connect( reply, SIGNAL(finished()), this, SLOT(postFinished()) );
@@ -900,7 +901,8 @@ void TranscribeWidget::postFinished()
 
 bool TranscribeWidget::takes()
 {  
-    QSettings settings("Bungeni", "transcribe");
+    QSettings settings("transcribe.conf", QSettings::IniFormat);
+    settings.beginGroup("Network");
     QString name = settings.value("username").toString();
     qDebug() << "Name : " << name;
     QString password = settings.value("password").toString();
@@ -914,7 +916,7 @@ bool TranscribeWidget::takes()
     posta->addField("format", "xml");
     reply = posta->postData(url);
     connect( reply, SIGNAL(finished()), this, SLOT(slotReadyRead()) );
-  
+    settings.endGroup();
     return true;
 }
 
@@ -926,11 +928,13 @@ void TranscribeWidget::slotReadyRead()
     qDebug() << data;
     qDebug() << cookie;
     QNetworkRequest request;
-    QSettings settings("Bungeni", "transcribe");
+    QSettings settings("transcribe.conf", QSettings::IniFormat);
+    settings.beginGroup("Network");
     QString url = "http://"+settings.value("hostname").toString()+"/mediawiki/index.php/Special:Assignment";
     request.setUrl(QUrl(url));
     reply = posta->http->get(request);
     connect( reply, SIGNAL(finished()), this, SLOT(takesReply()) );
+    settings.endGroup();
 }
 
 void TranscribeWidget::takesReply()
