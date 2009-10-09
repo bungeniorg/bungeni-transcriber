@@ -166,6 +166,16 @@ void PlaylistWidget :: prev()
     }
 }
 
+QString PlaylistWidget :: getMediaLocation()
+{
+    return model->data(model->index(current, 1)).toString();
+}
+
+QString PlaylistWidget :: getSittingName()
+{
+     return model->data(model->index(current, 0)).toString();
+}
+
 void PlaylistWidget :: setupModelView()
 {
     model = new QStandardItemModel(0,3,this);
@@ -179,7 +189,7 @@ void PlaylistWidget :: setupModelView()
    // model->setHeaderData(1, Qt::Horizontal, "Start Date/Time");
    // model->setHeaderData(2, Qt::Horizontal, "End Date/Time");
     model->setHeaderData(1, Qt::Horizontal, "Media File");
-    //model->setHeaderData(1, Qt::Horizontal, "Media File");
+    model->setHeaderData(2, Qt::Horizontal, "Transcript File");
     table = new QTableView(this);
 	table->setAlternatingRowColors(true);
     table->setModel(model);
