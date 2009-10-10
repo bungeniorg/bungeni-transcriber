@@ -478,7 +478,7 @@ void TranscribeWidget::refresh(const QModelIndex & index)
 void TranscribeWidget::addSpeech()
 {
 	qDebug( "Add Transcript entered" );
-	int i_length = 10000;
+	int i_length = _file_duration;
 	if (playlist->getSelected()>=0)
 	{
 	    model->insertRows(model->rowCount(), 1, QModelIndex());
