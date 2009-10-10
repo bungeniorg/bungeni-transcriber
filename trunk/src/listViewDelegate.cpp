@@ -203,6 +203,7 @@ QString ListViewDelegate::timeSecondstoString(const int time) const
   	editor->setName(personTxt);
   	//editor->setSpeech(text);
   	editor->setSpeech(textIndex.data(Qt::DisplayRole).toString());
+  	qDebug() << "Set Editor Data" << i_startTime;
   	editor->setStartTime(i_startTime);
   	editor->setEndTime(i_endTime);
   	editor->setComplete(complete);

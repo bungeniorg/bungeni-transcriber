@@ -335,10 +335,17 @@ void InplaceEditor::setSpeech(QString speech)
     
 void InplaceEditor::setStartTime(int start)
 {
-    ui.startTime->setTime(QTime::fromString(InplaceEditor::timeSecondstoString(start)));
+    /*
+    int hour = start / 3600;
+    int min = (start % 3600 ) / 60;
+    int seconds = (start % 3600) % 60;
+    ui.startTime->setTime(QTime(hour, min, seconds));
+    */
+    horizontalSlider->setLowerValue(start);
 }
     
 void InplaceEditor::setEndTime(int end)
 {
-    ui.endTime->setTime(QTime::fromString(InplaceEditor::timeSecondstoString(end)));
+    //ui.endTime->setTime(QTime::fromString(InplaceEditor::timeSecondstoString(end)));
+    horizontalSlider->setLowerValue(end);
 }
