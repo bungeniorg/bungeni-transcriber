@@ -29,9 +29,9 @@
 int main(int argc, char *argv[])
 {
     QApplication a(argc, argv);
-    TranscribeWidget p;
+    TranscribeWidget *p = TranscribeWidget::getInstance();
    // p.playFile("/home/miano/SpiritOfUbuntu.ogv"); // Replace with what you want to play
-    p.show();
+    p->show();
     return a.exec();
 }
 

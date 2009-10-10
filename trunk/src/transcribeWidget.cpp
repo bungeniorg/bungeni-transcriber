@@ -49,6 +49,10 @@
 #include <taglib/tag.h>
 #include <taglib/fileref.h>
 #include <taglib/tfile.h>
+
+
+TranscribeWidget * TranscribeWidget::instance = NULL;
+
 TranscribeWidget::TranscribeWidget() : QMainWindow()
 {
     //Setup UI 
@@ -102,6 +106,7 @@ TranscribeWidget::TranscribeWidget() : QMainWindow()
     _isPlaying=false;
     poller=new QTimer(this);
 
+
     //Initialize an instance of vlc
     //a structure for the exception is neede for this initalization
     libvlc_exception_init(&_vlcexcep);
@@ -120,6 +125,9 @@ TranscribeWidget::TranscribeWidget() : QMainWindow()
     
 
     poller->start(100); //start timer to trigger every 100 ms the updateInterface slot
+    
+    
+    
     
     
 }
@@ -223,12 +231,17 @@ void TranscribeWidget::loadMetaData(QString file)
        qDebug() << "Not Null";
     }
     */
-    _file_duration = libvlc_media_player_get_length( _mp, &_vlcexcep);
+    //file duration in seconds
+    _file_duration = libvlc_media_player_get_length( _mp, &_vlcexcep) / 1000;
      raise(&_vlcexcep);
      qDebug() << "file duration = " << _file_duration ;
      
 }
 
+int TranscribeWidget::getFileDuration()
+{
+    return _file_duration;
+}
 
 
 
@@ -341,6 +354,20 @@ void TranscribeWidget::playFile(QString file)
      //           _title = TStringToQString(tag->title()).trimmed(); 
     _isPlaying=true;
     controls->changeIcon(true);
+    
+    //length hack
+    //libvlc takes its time before it parses file metadata
+    //so we have to wait for it so as to get the file length
+    //need to change this to use events
+    
+    QTimer *timer = new QTimer();
+    timer->setSingleShot(true);
+    timer->start(400);
+    
+    //QObject::connect( controls, SIGNAL(playSignal()), timer, SLOT(start()));
+    QObject::connect(timer, SIGNAL(timeout()), this, SLOT(getLength()));
+    
+    
 }
 
 void TranscribeWidget::changeVolume(int newVolume)
@@ -360,7 +387,7 @@ void TranscribeWidget::changePosition(int newPosition)
     if (curMedia == NULL)
         return;
 
-    float pos=(newPosition)/POSITION_RESOLUTION;
+    float pos=(float)(newPosition)/(float)_file_duration;
     libvlc_media_player_set_position (_mp, pos, &_vlcexcep);
     raise(&_vlcexcep);
 }
@@ -381,11 +408,25 @@ void TranscribeWidget::updateInterface()
     
     
     //qDebug() << "Update Interface" << _file_duration;
-    int siderPos=(int)(pos*(float)(POSITION_RESOLUTION));
+    int siderPos=(int)(pos*(float)(_file_duration));
    // ui.positionSlider->setValue(siderPos);
    controls->updateSlider(siderPos);
+   
+
+     
     
 }
+
+void TranscribeWidget::getLength()
+{
+    //in seconds
+       _file_duration = libvlc_media_player_get_length( _mp, &_vlcexcep) / 1000;
+     raise(&_vlcexcep);
+     qDebug() << "get length file duration = " << _file_duration ;
+     
+     controls->setDuration(_file_duration);
+}
+
 
 void TranscribeWidget::raise(libvlc_exception_t * ex)
 {
