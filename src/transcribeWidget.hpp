@@ -59,10 +59,13 @@ class TranscribeWidget : public QMainWindow
 {
     Q_OBJECT
     public:
-        TranscribeWidget();
-        ~TranscribeWidget();
-        QFrame * video;
-        void raise(libvlc_exception_t * ex);
+        static TranscribeWidget* getInstance()
+        {
+            if (!instance)
+                instance = new TranscribeWidget();
+            return instance;
+        }
+        int getFileDuration();
     public slots:  
         void addSpeech();
         void removeSpeech();
@@ -94,7 +97,13 @@ class TranscribeWidget : public QMainWindow
         void skipBackward(int sec);
         void playFaster();
         void playSlower();
+        void getLength();
     private:
+        TranscribeWidget();
+        ~TranscribeWidget();
+        static TranscribeWidget *instance;
+        QFrame * video;
+        void raise(libvlc_exception_t * ex);
         Ui::Transcribe ui;
         bool _isPlaying;
         libvlc_exception_t _vlcexcep;
@@ -142,7 +151,7 @@ class TranscribeWidget : public QMainWindow
         QAction *exitAct;
         QAction *aboutAct;
         QAction *hotkeyAct;
-        long currentFileDuration;
+        int currentFileDuration;
         QString sittingName;
         QString mediaLocation;
         /*

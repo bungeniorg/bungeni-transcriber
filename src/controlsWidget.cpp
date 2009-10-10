@@ -132,7 +132,7 @@ void ControlsWidget :: changeIcon(bool playing)
 //Duration of currently playing file in seconds
 void ControlsWidget::setDuration(int sec)
 {
-//    ui.positionSlider->setMaximum(sec);
+    ui.positionSlider->setMaximum(sec);
 }
 
 void ControlsWidget::updateSlider(int pos)

@@ -66,16 +66,16 @@ void ListViewDelegate::paint(QPainter *painter, const QStyleOptionViewItem &opti
 	QString startTimeTxt = "Start Time : "+this->timeSecondstoString(i_startTime);
   	QString endTimeTxt = "End Time : "+this->timeSecondstoString(i_endTime);
   	  	
-  	QRect rStartTime = option.rect.adjusted(2, 2, 150, 29);
+  	QRect rStartTime = option.rect.adjusted(2, 2, 200, 29);
   	painter->drawText(rStartTime.left(), rStartTime.top(), rStartTime.width(), rStartTime.height(), Qt::AlignTop|Qt::AlignLeft|Qt::TextWordWrap, startTimeTxt, &rStartTime);
   	  	
-  	QRect rEndTime = option.rect.adjusted(151, 2, 200, 29);
+  	QRect rEndTime = option.rect.adjusted(201, 2, 200, 29);
   	painter->drawText(rEndTime.left(), rEndTime.top(), rEndTime.width(), rEndTime.height(), Qt::AlignTop|Qt::AlignLeft|Qt::TextWordWrap, endTimeTxt, &rEndTime);
   	  	
-  	QRect rText = option.rect.adjusted(2, 30, 151, -2);
+  	QRect rText = option.rect.adjusted(2, 30, 200, -2);
   	painter->drawText(rText.left(), rText.top(), rText.width(), rText.height(), Qt::AlignTop|Qt::AlignLeft|Qt::TextWordWrap, personTxt, &rText);
   	  	
-  	QRect r = option.rect.adjusted(151, 30, -2, -2);
+  	QRect r = option.rect.adjusted(201, 30, -2, -2);
   	painter->drawText(r.left(), r.top(), r.width(), r.height(), Qt::AlignTop|Qt::AlignLeft|Qt::TextWordWrap, text, &r);
   	
 }
@@ -216,16 +216,17 @@ QString ListViewDelegate::timeSecondstoString(const int time) const
     model->setData(model->index( index.row() , 4), editor->getComplete());
     
     model->setData(model->index( index.row() , 0), editor->getSpeech());
-    QTime time = editor->getStartTime();
+    //QTime time = editor->getStartTime();
+    int time = editor->getStartTime();
     qDebug() << "Set Model data - Start time = "<<time;
-    int temp;
-	temp = time.hour() * 3600 + time.minute()*60 + time.second();
-    model->setData(model->index( index.row() , 2), temp);
+   // int temp;
+	//temp = time.hour() * 3600 + time.minute()*60 + time.second();
+    model->setData(model->index( index.row() , 2), time);
     time = editor->getEndTime();
-    qDebug() << "Set Model data - End time = "<<time;
-    temp = time.hour() * 3600 + time.minute()*60 + time.second();
-    model->setData(model->index( index.row() , 3), temp);
-    
+   // qDebug() << "Set Model data - End time = "<<time;
+   // temp = time.hour() * 3600 + time.minute()*60 + time.second();
+   // model->setData(model->index( index.row() , 3), temp);
+    model->setData(model->index( index.row() , 3), time);
     
  }
  

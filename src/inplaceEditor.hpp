@@ -47,8 +47,10 @@ public:
    // void setValues(QString _name, QString _speech, int _startTime, int _endTime);
     QString getName();
     QString getSpeech();
-    QTime getStartTime();
-    QTime getEndTime();
+    //QTime getStartTime();
+   // QTime getEndTime();
+    int getStartTime();
+    int getEndTime();
     bool getComplete();
     void setComplete(bool incomplete);
     void setName(QString);
@@ -56,6 +58,7 @@ public:
     void setStartTime(int);
     void setEndTime(int);
     void setIndex(const QModelIndex& );
+    void setDuration(int);
 private:
     QString timeSecondstoString(int time);
     Ui::inPlaceEditor ui;
@@ -72,6 +75,7 @@ public slots:
     void underline();
     void save();
     void cancel();
+    void play();
 signals:
     void close(QWidget *);
     void cancelled(QWidget *);

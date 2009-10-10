@@ -43,9 +43,9 @@ InplaceEditor::InplaceEditor(QWidget * parent) : QWidget(parent)
     horizontalSlider = new QxtSpanSlider();
     horizontalSlider->setObjectName(QString::fromUtf8("horizontalSlider"));
     horizontalSlider->setOrientation(Qt::Horizontal);
-    horizontalSlider->setMaximum(10000);
-    ui.gridLayout->addWidget(horizontalSlider, 2, 3, 1, 2);
-    
+    //horizontalSlider->setMaximum(10000);
+    ui.gridLayout->addWidget(horizontalSlider, 0, 3, 1, 3);
+    ui.play->setIcon(QIcon(":/pixmaps/play.png"));
     speechText = new customTextEdit(parent);
     //speechText->setGeometry(0,0,444,326);
     speechText->setObjectName(QString::fromUtf8("speech"));
@@ -54,21 +54,23 @@ InplaceEditor::InplaceEditor(QWidget * parent) : QWidget(parent)
     sizePolicy.setVerticalStretch(3);
     sizePolicy.setHeightForWidth(speechText->sizePolicy().hasHeightForWidth());
     speechText->setSizePolicy(sizePolicy);
-    ui.gridLayout->addWidget(speechText, 6, 0, 1, 6);
+    ui.gridLayout->addWidget(speechText, 3, 0, 1, 7);
     
     QObject::connect(ui.startTime, SIGNAL(timeChanged( const QTime & )), this, SLOT(updateStartTime( const QTime &)));
     QObject::connect(ui.endTime, SIGNAL(timeChanged( const QTime & )), this, SLOT(updateEndTime( const QTime &)));
     QObject::connect(horizontalSlider, SIGNAL( lowerValueChanged( int ) ), this, SLOT( updateStartTime( int ) ));
     QObject::connect(horizontalSlider, SIGNAL( upperValueChanged( int ) ), this, SLOT( updateEndTime( int ) ));  
     
-  //  QObject::connect( horizontalSlider, SIGNAL(lowerValueChanged( int )), THEMIM->getIM(), SLOT(sliderUpdate( int ) ));
-  //  QObject::connect( horizontalSlider, SIGNAL(upperValueChanged( int )), THEMIM->getIM(), SLOT(sliderUpdate( int ) ));
+    QObject::connect( horizontalSlider, SIGNAL(lowerValueChanged( int )), TranscribeWidget::getInstance(), SLOT(changePosition( int ) ));
+    QObject::connect( horizontalSlider, SIGNAL(upperValueChanged( int )), TranscribeWidget::getInstance(), SLOT(changePosition( int ) ));
     
     QObject::connect( ui.bold, SIGNAL(clicked( )), this, SLOT( bold( ) ) );
     QObject::connect( ui.italics, SIGNAL(clicked( )), this, SLOT( italics( ) ) );
     QObject::connect( ui.underline, SIGNAL(clicked( )), this, SLOT( underline( ) ) );
     QObject::connect( ui.save, SIGNAL(clicked( )), this, SLOT( save( ) ) );
     QObject::connect( ui.cancel, SIGNAL(clicked( )), this, SLOT( cancel( ) ) );
+    QObject::connect( ui.play, SIGNAL(clicked( )), this, SLOT( play( ) ) );
+    this->setDuration(TranscribeWidget::getInstance()->getFileDuration());
 }
 
 InplaceEditor::~InplaceEditor()
@@ -242,6 +244,11 @@ void InplaceEditor::save()
     emit closeIndex(index);
 }
 
+void InplaceEditor::play()
+{
+    TranscribeWidget::getInstance()->changePosition(horizontalSlider->lowerValue());
+}
+
 void InplaceEditor::cancel()
 {
     emit cancelled(this);
@@ -267,14 +274,18 @@ QString InplaceEditor::getSpeech()
 }
 
 
-QTime InplaceEditor::getStartTime()
+int InplaceEditor::getStartTime()
 {
-    return ui.startTime->time();
+  //  qDebug() << "inplace editor getStartTime " << ui.startTime->time();
+   // return ui.startTime->time();
+   return horizontalSlider->lowerValue();
 }
     
-QTime InplaceEditor::getEndTime()
+int InplaceEditor::getEndTime()
 {
-    return ui.endTime->time();
+    //qDebug() << "inplace editor getendTime " << ui.endTime->time();
+   // return ui.endTime->time();
+   return horizontalSlider->upperValue();
 }
 
 bool InplaceEditor::getComplete()
@@ -304,6 +315,16 @@ void InplaceEditor::setComplete(bool incomplete)
     {
         ui.incomplete->setCheckState(Qt::Unchecked);
     }
+}
+
+void InplaceEditor::setDuration(int sec)
+{
+    horizontalSlider->setMaximum(sec);
+    int hour = sec / 3600;
+    int min = (sec % 3600 ) / 60;
+    int seconds = (sec % 3600) % 60;
+    ui.startTime->setMaximumTime(QTime(hour, min, seconds));
+    ui.endTime->setMaximumTime(QTime(hour, min, seconds));
 }
  
 void InplaceEditor::setSpeech(QString speech)
