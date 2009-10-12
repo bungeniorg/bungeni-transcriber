@@ -362,7 +362,7 @@ void TranscribeWidget::playFile(QString file)
     
     QTimer *timer = new QTimer();
     timer->setSingleShot(true);
-    timer->start(400);
+    timer->start(1500);
     
     //QObject::connect( controls, SIGNAL(playSignal()), timer, SLOT(start()));
     QObject::connect(timer, SIGNAL(timeout()), this, SLOT(getLength()));
@@ -379,6 +379,9 @@ void TranscribeWidget::changeVolume(int newVolume)
 
 void TranscribeWidget::changePosition(int newPosition)
 {
+    if(!_isPlaying)
+        return;
+        
     libvlc_exception_clear(&_vlcexcep);
     // It's possible that the vlc doesn't play anything
     // so check before
@@ -386,7 +389,7 @@ void TranscribeWidget::changePosition(int newPosition)
     libvlc_exception_clear(&_vlcexcep);
     if (curMedia == NULL)
         return;
-
+   
     float pos=(float)(newPosition)/(float)_file_duration;
     libvlc_media_player_set_position (_mp, pos, &_vlcexcep);
     raise(&_vlcexcep);
@@ -395,8 +398,10 @@ void TranscribeWidget::changePosition(int newPosition)
 void TranscribeWidget::updateInterface()
 {
     if(!_isPlaying)
+    {
+        this->stop();
         return;
-
+    }
     // It's possible that the vlc doesn't play anything
     // so check before
     libvlc_media_t *curMedia = libvlc_media_player_get_media (_mp, &_vlcexcep);
@@ -1293,12 +1298,12 @@ void TranscribeWidget::preferences()
 void TranscribeWidget::createActions()
  {
      addToPlaylistAct = new QAction("&Add to Playlist", this);
-     addToPlaylistAct->setShortcuts(QKeySequence::New);
+    // addToPlaylistAct->setShortcuts(QKeySequence::New);
      addToPlaylistAct->setStatusTip("Add an existing or new item to playlist");
      connect(addToPlaylistAct, SIGNAL(triggered()), playlist, SLOT(addToPlaylistDialog()));
 
      saveAct = new QAction("&Save", this);
-     saveAct->setShortcuts(QKeySequence::Save);
+  //   saveAct->setShortcuts(QKeySequence::Save);
      saveAct->setStatusTip("Save the document to disk");
      connect(saveAct, SIGNAL(triggered()), this, SLOT(saveFile()));
 
