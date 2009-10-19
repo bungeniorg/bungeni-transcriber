@@ -246,7 +246,9 @@ void InplaceEditor::save()
 
 void InplaceEditor::play()
 {
-    TranscribeWidget::getInstance()->changePosition(horizontalSlider->lowerValue());
+    TranscribeWidget *instance = TranscribeWidget::getInstance();
+    instance->play();
+    instance->changePosition(horizontalSlider->lowerValue());
 }
 
 void InplaceEditor::cancel()

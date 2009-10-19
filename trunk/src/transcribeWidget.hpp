@@ -66,6 +66,7 @@ class TranscribeWidget : public QMainWindow
             return instance;
         }
         int getFileDuration();
+        void endReached();
     public slots:  
         void addSpeech();
         void removeSpeech();
@@ -112,6 +113,7 @@ class TranscribeWidget : public QMainWindow
         libvlc_media_player_t *_mp;
         libvlc_media_t *_m;
         libvlc_time_t _file_duration;
+        libvlc_event_manager_t * p_event_manager;
         QTableView *table;
         QVBoxLayout *mainLayout;
         QPushButton *addButton;

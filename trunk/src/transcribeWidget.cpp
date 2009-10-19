@@ -46,9 +46,9 @@
 
 //Use taglib for now since libvlc doesnt get correct file length
 //TO DO : Remove
-#include <taglib/tag.h>
-#include <taglib/fileref.h>
-#include <taglib/tfile.h>
+//#include <taglib/tag.h>
+//#include <taglib/fileref.h>
+//#include <taglib/tfile.h>
 
 
 TranscribeWidget * TranscribeWidget::instance = NULL;
@@ -252,11 +252,6 @@ void TranscribeWidget::playSlower()
 
 
 
-
-/** Converts a Qt4 QString to a TagLib::String. */
-#define Qt4QStringToTString(s) TagLib::String(s.toUtf8().data(), TagLib::String::UTF8)
-
-
 void TranscribeWidget::loadMetaData(QString file)
 {
     /*
@@ -284,6 +279,14 @@ int TranscribeWidget::getFileDuration()
     return _file_duration;
 }
 
+// End of file reached callback
+static void end_reached_callback(const libvlc_event_t *, void *)
+{
+    qDebug() << "End Reached Callback success";
+    TranscribeWidget *instance = TranscribeWidget::getInstance();
+    instance->endReached();
+   // _isPlaying=false;
+}
 
 
 void TranscribeWidget::playFile(QString file)
@@ -408,7 +411,11 @@ void TranscribeWidget::playFile(QString file)
     //QObject::connect( controls, SIGNAL(playSignal()), timer, SLOT(start()));
     QObject::connect(timer, SIGNAL(timeout()), this, SLOT(getLength()));
     
-    
+    //setup event
+    p_event_manager = libvlc_media_player_event_manager( _mp, &_vlcexcep );
+    raise(&_vlcexcep);
+    libvlc_event_attach ( p_event_manager, libvlc_MediaPlayerEndReached, end_reached_callback, NULL, &_vlcexcep);
+	raise(&_vlcexcep); 		
 }
 
 void TranscribeWidget::changeVolume(int newVolume)
@@ -436,14 +443,16 @@ void TranscribeWidget::changePosition(int newPosition)
     raise(&_vlcexcep);
 }
 
+void TranscribeWidget::endReached()
+{
+    _isPlaying = false;
+    controls->changeIcon(false);
+    //this->stop();
+}
+
 void TranscribeWidget::updateInterface()
 {
-    if(!_isPlaying)
-    {
-      //  this->stop();
-        controls->changeIcon(false);
-        return;
-    }
+    
     // It's possible that the vlc doesn't play anything
     // so check before
     libvlc_media_t *curMedia = libvlc_media_player_get_media (_mp, &_vlcexcep);
@@ -452,7 +461,6 @@ void TranscribeWidget::updateInterface()
         return;
 
     float pos=libvlc_media_player_get_position (_mp, &_vlcexcep);
-    
     
     //qDebug() << "Update Interface" << _file_duration;
     int siderPos=(int)(pos*(float)(_file_duration));
