@@ -278,6 +278,8 @@ int InplaceEditor::getStartTime()
 {
   //  qDebug() << "inplace editor getStartTime " << ui.startTime->time();
    // return ui.startTime->time();
+   qDebug() << "inplace editor getStartTime " << horizontalSlider->lowerValue();
+   qDebug() << "inplace editor ui.starttime->time " << ui.startTime->time();;
    return horizontalSlider->lowerValue();
 }
     

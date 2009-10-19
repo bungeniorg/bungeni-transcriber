@@ -89,6 +89,8 @@ ControlsWidget::ControlsWidget()
     QObject::connect( ui.prev, SIGNAL(clicked()), this, SLOT(prev()));
     QObject::connect( ui.play, SIGNAL(clicked()), this, SLOT(play()));
     QObject::connect( ui.next, SIGNAL(clicked()), this, SLOT(next()));
+    QObject::connect( ui.faster, SIGNAL(clicked()), this, SLOT(playFaster()));
+    QObject::connect( ui.slower, SIGNAL(clicked()), this, SLOT(playSlower()));
     QObject::connect( ui.positionSlider, SIGNAL(sliderMoved(int)), this, SIGNAL(sliderMoved(int)));
 }
 
@@ -100,6 +102,16 @@ ControlsWidget::~ControlsWidget()
 void ControlsWidget::stop()
 {
     emit stopSignal();
+}
+
+void ControlsWidget::playFaster()
+{
+    emit fasterSignal();
+}
+
+void ControlsWidget::playSlower()
+{
+    emit slowerSignal();
 }
 
 void ControlsWidget::play()

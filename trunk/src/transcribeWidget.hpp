@@ -98,6 +98,7 @@ class TranscribeWidget : public QMainWindow
         void playFaster();
         void playSlower();
         void getLength();
+        void selection(QModelIndex);
     private:
         TranscribeWidget();
         ~TranscribeWidget();
