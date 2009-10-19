@@ -44,6 +44,8 @@ protected slots:
     void stop();
     void prev();
     void next();
+    void playFaster();
+    void playSlower();
     /*
     void updateVolume( int );
     void updateVolume( void );
@@ -56,5 +58,7 @@ signals:
     void stopSignal();
     void prevSignal();
     void nextSignal();
+    void fasterSignal();
+    void slowerSignal();
     void sliderMoved(int);
 };

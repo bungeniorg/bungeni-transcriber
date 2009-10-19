@@ -61,7 +61,8 @@ TranscribeWidget::TranscribeWidget() : QMainWindow()
     QObject::connect( ui.addButton, SIGNAL(clicked()), this, SLOT(addSpeech()) );
     QObject::connect( ui.removeButton, SIGNAL(clicked()), this, SLOT(removeSpeech()) );
     QObject::connect( ui.table, SIGNAL(doubleClicked(QModelIndex)), delegate, SLOT(currentEditing(QModelIndex)));
-    QObject::connect( ui.table, SIGNAL(clicked(QModelIndex)), delegate, SLOT(display(QModelIndex)));
+   QObject::connect( ui.table, SIGNAL(clicked(QModelIndex)), delegate, SLOT(display(QModelIndex)));
+   QObject::connect( ui.table, SIGNAL(clicked(QModelIndex)), this, SLOT(selection(QModelIndex)));
     this->setupModelView();
     fileName="";
     
@@ -81,6 +82,7 @@ TranscribeWidget::TranscribeWidget() : QMainWindow()
    // ui.positionSlider->setMaximum(POSITION_RESOLUTION);
 
     
+    
     ui.gridLayout_2->addWidget(video, 0, 0, 1, 3);
     
     controls = new ControlsWidget();
@@ -98,6 +100,8 @@ TranscribeWidget::TranscribeWidget() : QMainWindow()
     
     QObject::connect( controls, SIGNAL(playSignal()), this, SLOT(play()));
     QObject::connect( controls, SIGNAL(stopSignal()), this, SLOT(stop()));
+    QObject::connect( controls, SIGNAL(fasterSignal()), this, SLOT(playFaster()));
+    QObject::connect( controls, SIGNAL(slowerSignal()), this, SLOT(playSlower()));
     QObject::connect( controls, SIGNAL(nextSignal()), playlist, SLOT(next()));
     QObject::connect( controls, SIGNAL(prevSignal()), playlist, SLOT(prev()));
     this->createActions();
@@ -153,7 +157,7 @@ void TranscribeWidget :: stop()
     raise(&_vlcexcep);
     /* Free the media_player */
    // libvlc_media_player_release (_mp);
-    qDebug() << currentMediaFile;
+    qDebug() << "Stop " << currentMediaFile;
     _isPlaying = false;
     controls->changeIcon(false);
 }
@@ -161,7 +165,7 @@ void TranscribeWidget :: stop()
 
 void TranscribeWidget::play()
 {
-    qDebug() << currentMediaFile;
+    qDebug() << "Playing file =" << currentMediaFile;
     //if (currentMediaFile != "")
     //{
      //   playFile(currentMediaFile);
@@ -203,9 +207,46 @@ void TranscribeWidget::skipBackward(int sec)
 }
 void TranscribeWidget::playFaster()
 {
+    float currentRate = libvlc_media_player_get_rate( _mp, &_vlcexcep);
+    raise(&_vlcexcep);
+    qDebug() << "Current rate is " << currentRate;
+    float newRate=1.0;
+        if (currentRate < 0.75)
+            newRate = 0.75;
+        else if ((currentRate >= 0.75) && (currentRate < 1.0))
+            newRate = 1.0;
+        else if ((currentRate >= 1.0) && (currentRate < 1.5))
+            newRate = 1.5;
+        else if ((currentRate >= 1.5) && (currentRate < 2.0))
+            newRate = 2.0;
+        else if (currentRate >= 2.0) 
+            newRate = 3.0;
+        libvlc_media_player_set_rate( _mp, newRate, &_vlcexcep);
+        raise(&_vlcexcep);
+        qDebug() << "New rate is " << newRate;
 }
 void TranscribeWidget::playSlower()
 {
+    float currentRate = libvlc_media_player_get_rate( _mp, &_vlcexcep);
+    raise(&_vlcexcep);
+    qDebug() << "Current rate is " << currentRate;
+    float newRate=1.0;
+        if (currentRate < 0.75)
+            newRate = 0.5;
+        else if ((currentRate >= 0.75) && (currentRate < 1.0))
+            newRate = 0.5;
+        else if ((currentRate >= 1.0) && (currentRate < 1.5))
+            newRate = 0.75 ;
+        else if ((currentRate >=1.5) && (currentRate < 2.0))
+            newRate = 1.0;
+        else if ((currentRate >= 2.0) && (currentRate < 3.0))
+            newRate = 1.5;
+        else if (currentRate >= 3.0)
+            newRate = 2.0;
+        libvlc_media_player_set_rate( _mp, newRate, &_vlcexcep);
+        raise(&_vlcexcep);
+        qDebug() << "New rate is " << newRate;
+    
 }
 
 
@@ -259,7 +300,7 @@ void TranscribeWidget::playFile(QString file)
     [cdda://][device]              Audio CD device
     udp:[[<source address>]@[<bind address>][:<bind port>]]
     */
-    qDebug() << file;
+    qDebug() << "File playing is" << file;
     
     currentMediaFile = file;
     
@@ -399,7 +440,8 @@ void TranscribeWidget::updateInterface()
 {
     if(!_isPlaying)
     {
-        this->stop();
+      //  this->stop();
+        controls->changeIcon(false);
         return;
     }
     // It's possible that the vlc doesn't play anything
@@ -421,6 +463,19 @@ void TranscribeWidget::updateInterface()
      
     
 }
+
+void TranscribeWidget::selection(QModelIndex)
+{
+    if (ui.table->isSelectionRectVisible ())
+    {
+        qDebug() << "selection rect is visible";
+    }
+    else
+    {
+        qDebug() << "selection rect is not visible";
+    }
+}
+
 
 void TranscribeWidget::getLength()
 {
@@ -537,6 +592,10 @@ void TranscribeWidget::setupModelView()
      	
     selectionModel = new QItemSelectionModel(filterModel);
 	ui.table->setSelectionModel(selectionModel);
+	//Set selection
+    ui.table->setSelectionMode(QAbstractItemView::ContiguousSelection);
+    ui.table->setSelectionRectVisible(true);
+    
 }
 
 
@@ -1321,11 +1380,11 @@ void TranscribeWidget::createActions()
      
      getTakesAct = new QAction("Get Takes", this);
      getTakesAct->setStatusTip("Get Assigned Takes from Bungeni Portal Server");
-     connect(getTakesAct, SIGNAL(triggered()), this, SLOT(getTakes()));
+    // connect(getTakesAct, SIGNAL(triggered()), this, SLOT(getTakes()));
      
      postTakesAct = new QAction("Post Takes", this);
      postTakesAct->setStatusTip("Post Transcribed Takes to Bungeni Portal Server");
-     connect(postTakesAct, SIGNAL(triggered()), this, SLOT(getTakes()));
+    // connect(postTakesAct, SIGNAL(triggered()), this, SLOT(getTakes()));
       
      exitAct = new QAction("E&xit", this);
      //exitAct->setShortcut("Ctrl+Q");
