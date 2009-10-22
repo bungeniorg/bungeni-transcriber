@@ -4,7 +4,7 @@
 
 #INCLUDEPATH for libvlc on Ubuntu. May be different on other distros
 INCLUDEPATH = /usr/include/vlc /usr/include/taglib
-LIBS += -lvlc -ltag
+LIBS += -lvlc
 
 HEADERS +=  src/transcribeWidget.hpp \
             src/controlsWidget.hpp \
