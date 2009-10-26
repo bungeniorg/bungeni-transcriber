@@ -280,12 +280,18 @@ int TranscribeWidget::getFileDuration()
 }
 
 // End of file reached callback
+/*
 static void end_reached_callback(const libvlc_event_t *, void *)
 {
     qDebug() << "End Reached Callback success";
-    TranscribeWidget *instance = TranscribeWidget::getInstance();
-    instance->endReached();
+    //TranscribeWidget *instance = TranscribeWidget::getInstance();
+  //  instance->endReached();
    // _isPlaying=false;
+}
+*/
+static void media_preparsed_callback(const libvlc_event_t *, void *)
+{
+    qDebug() << "Media Pre-parsed success";
 }
 
 
@@ -408,14 +414,21 @@ void TranscribeWidget::playFile(QString file)
     timer->setSingleShot(true);
     timer->start(1500);
     
-    //QObject::connect( controls, SIGNAL(playSignal()), timer, SLOT(start()));
+    QObject::connect( controls, SIGNAL(playSignal()), timer, SLOT(start()));
     QObject::connect(timer, SIGNAL(timeout()), this, SLOT(getLength()));
-    
+    //this->getLength();
     //setup event
-    p_event_manager = libvlc_media_player_event_manager( _mp, &_vlcexcep );
-    raise(&_vlcexcep);
-    libvlc_event_attach ( p_event_manager, libvlc_MediaPlayerEndReached, end_reached_callback, NULL, &_vlcexcep);
-	raise(&_vlcexcep); 		
+  //  p_event_manager = libvlc_media_player_event_manager( _mp, &_vlcexcep );
+  //  raise(&_vlcexcep);
+   // libvlc_event_attach ( p_event_manager, libvlc_MediaPlayerEndReached, end_reached_callback, NULL, &_vlcexcep);
+	//raise(&_vlcexcep); 	
+	
+	
+	// parse file metadata
+	//p_event_manager = libvlc_media_event_manager( _m, &_vlcexcep );
+   // raise(&_vlcexcep);
+   // libvlc_event_attach ( p_event_manager, libvlc_MediaPreparsedChanged, media_preparsed_callback, NULL, &_vlcexcep);
+	//raise(&_vlcexcep);
 }
 
 void TranscribeWidget::changeVolume(int newVolume)
@@ -488,6 +501,7 @@ void TranscribeWidget::selection(QModelIndex)
 void TranscribeWidget::getLength()
 {
     //in seconds
+    
        _file_duration = libvlc_media_player_get_length( _mp, &_vlcexcep) / 1000;
      raise(&_vlcexcep);
      qDebug() << "get length file duration = " << _file_duration ;
