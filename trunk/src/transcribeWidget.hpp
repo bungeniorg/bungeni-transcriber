@@ -166,6 +166,8 @@ class TranscribeWidget : public QMainWindow
         //void keyPressEvent( QKeyEvent *e );
         QString currentMediaFile;
         ControlsWidget *controls;
+        void keyPressEvent( QKeyEvent *keyEvent );
+        void jumpPosition(int change);
 };
 
 #endif

@@ -289,11 +289,12 @@ static void end_reached_callback(const libvlc_event_t *, void *)
    // _isPlaying=false;
 }
 */
+/*
 static void media_preparsed_callback(const libvlc_event_t *, void *)
 {
     qDebug() << "Media Pre-parsed success";
 }
-
+*/
 
 void TranscribeWidget::playFile(QString file)
 {
@@ -452,8 +453,11 @@ void TranscribeWidget::changePosition(int newPosition)
         return;
    
     float pos=(float)(newPosition)/(float)_file_duration;
-    libvlc_media_player_set_position (_mp, pos, &_vlcexcep);
-    raise(&_vlcexcep);
+    if (pos <=1.0)
+    {
+        libvlc_media_player_set_position (_mp, pos, &_vlcexcep);
+        raise(&_vlcexcep);
+    }
 }
 
 void TranscribeWidget::endReached()
@@ -1434,4 +1438,114 @@ void TranscribeWidget::about()
 {
     aboutWidget *about = new aboutWidget();
     about->show(); 
+}
+
+
+void TranscribeWidget::jumpPosition(int change)
+{
+    if(!_isPlaying)
+        return;
+        
+    libvlc_exception_clear(&_vlcexcep);
+    libvlc_media_t *curMedia = libvlc_media_player_get_media (_mp, &_vlcexcep);
+    libvlc_exception_clear(&_vlcexcep);
+    if (curMedia == NULL)
+        return;
+    float curtime = libvlc_media_player_get_time(_mp, &_vlcexcep) / 1000;
+    raise(&_vlcexcep);
+    float newTime = curtime + change;
+    
+    if (newTime > 0)
+    {
+        libvlc_media_player_set_time (_mp, newTime*1000, &_vlcexcep);
+        raise(&_vlcexcep);
+    }
+}
+
+void TranscribeWidget::keyPressEvent( QKeyEvent *keyEvent )
+{
+        QSettings settings("transcribe.conf", QSettings::IniFormat);
+        settings.beginGroup("Hotkey");
+     	QStringList keys = settings.childKeys();
+     	int values[30];
+     	int j=0, i=0;
+     	int event = qtEventToVLCKey(keyEvent);
+     	bool found = false;
+     	keys = settings.childKeys();
+     	if (event > 0)
+     	{
+     		for (i = 0; i < keys.size(); ++i)
+     		{
+        	    values[i]=  settings.value(keys.at(i)).toInt(); 
+    		}
+    		while ((found == false) && (j <= i))
+    		{
+    			if( values[j] == event)
+    			{
+    				qDebug() << "accept" << event;
+    				
+    				if (keys.at(j) == "Faster")
+    				{
+    					this->playFaster();
+    				}   
+    				else if (keys.at(j) == "Add Transcript")
+    				{
+    					this->addSpeech();
+    				} 			
+    				else if (keys.at(j) == "Jump backward 10 Sec")
+    				{
+    					this->jumpPosition(-10);
+    				}
+    				else if (keys.at(j) == "Jump backward 2 Sec")
+    				{
+    					this->jumpPosition(-2);
+    				}
+    				else if (keys.at(j) == "Jump backward 30 Sec")
+    				{
+    					this->jumpPosition(-30);
+    				}
+    				else if (keys.at(j) == "Jump forward 10 Sec")
+    				{
+    					this->jumpPosition(10);
+    				}
+    				else if (keys.at(j) == "Jump forward 2 Sec")
+    				{
+    					this->jumpPosition(2);
+    				}
+    				else if (keys.at(j) == "Jump forward 30 Sec")
+    				{
+    					this->jumpPosition(30);
+    				}
+    				else if (keys.at(j) == "Play")
+    				{
+    					this->play();
+    				}
+    				else if (keys.at(j) == "Remove Transcript")
+    				{
+    					this->removeSpeech();
+    				}
+    				else if (keys.at(j) == "Slower")
+    				{
+    					this->playSlower();
+    				}
+    				else if (keys.at(j) == "Stop")
+    				{
+    					this->stop();
+    				}
+    				
+    				
+    				 found = true;
+    				keyEvent->accept();
+    			}
+	    		j++;
+    		}
+    	
+    		if (found == false)
+    		{
+    			qDebug() << "ignore" << event;
+    			//QTextEdit::keyPressEvent(e);
+    			keyEvent->ignore();
+    		}
+    		settings.endGroup();
+	}
 }
