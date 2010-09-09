@@ -39,6 +39,7 @@
 #include <QTimer>
 #include <QKeyEvent>
 #include <QWheelEvent>
+#include <QPalette>
 #include "transcribeWidget.hpp"
 #include "about.hpp"
 #include "hotkeyWidget.hpp"
@@ -76,7 +77,10 @@ TranscribeWidget::TranscribeWidget() : QMainWindow()
               "--plugin-path=/home/miano/Work/vlc-0.9.10/modules/" };
 
     video=new QFrame(this);
-
+    QPalette palette = video->palette();
+    palette.setColor( backgroundRole(), QColor( 0, 0, 0 ) );
+    video->setPalette( palette );
+    video->setAutoFillBackground( true );
    
     // Note: if you use streaming, there is no ability to use the position slider
    // ui.positionSlider->setMaximum(POSITION_RESOLUTION);
