@@ -1038,25 +1038,22 @@ void TranscribeWidget::postFinished()
   QMessageBox::information(0, "Success", "Speeches successfully posted to Bungeni");
 }
 
-bool TranscribeWidget::takes()
+void TranscribeWidget::takes()
 {  
     QSettings settings("transcribe.conf", QSettings::IniFormat);
     settings.beginGroup("Network");
     QString name = settings.value("username").toString();
     qDebug() << "Name : " << name;
     QString password = settings.value("password").toString();
-   QString url = "http://"+settings.value("hostname").toString()+"/mediawiki/api.php";
+    QString url = "http://"+settings.value("hostname").toString()+":"+settings.value("port").toString()+"/login";
     qDebug() << "url : " << url;
     posta = new FormPostPlugin();
-    
-    posta->addField("action", "login");
-    posta->addField("lgname", name);
-    posta->addField("lgpassword", password);
-    posta->addField("format", "xml");
+    posta->addField("login", name);
+    posta->addField("password", password);
+    posta->addField("actions.login", "Login");
     reply = posta->postData(url);
     connect( reply, SIGNAL(finished()), this, SLOT(slotReadyRead()) );
     settings.endGroup();
-    return true;
 }
 
 
@@ -1064,13 +1061,14 @@ void TranscribeWidget::slotReadyRead()
 {
     QByteArray data = posta->response();
     QByteArray cookie = reply->rawHeader("Set-Cookie");
-    qDebug() << data;
+    //qDebug() << data;
     qDebug() << cookie;
     QNetworkRequest request;
     QSettings settings("transcribe.conf", QSettings::IniFormat);
     settings.beginGroup("Network");
-    QString url = "http://"+settings.value("hostname").toString()+"/mediawiki/index.php/Special:Assignment";
+    QString url = "http://"+settings.value("hostname").toString()+":"+settings.value("port").toString()+"/takesxml";
     request.setUrl(QUrl(url));
+    qDebug() << url;
     reply = posta->http->get(request);
     connect( reply, SIGNAL(finished()), this, SLOT(takesReply()) );
     settings.endGroup();
@@ -1079,33 +1077,41 @@ void TranscribeWidget::slotReadyRead()
 void TranscribeWidget::takesReply()
 {
     QByteArray data = posta->response();
-    qDebug() << data;
+    qDebug() << "Assignments" << data;
     QXmlStreamReader reader;
-    QString streamName;
+    QString sittingName;
     reader.addData(data);
     QStringList files;
+    QString fileURL = "";
     while (!reader.atEnd()) {
         reader.readNext();
-        if (reader.name() == "ass")
+        if (reader.name() == "assignment")
         {
         	//mediaLocation = reader.attributes().value("media").toString();
+        	qDebug() << "assignment";
         }
-        else if (reader.name() == "stream")
+        else if (reader.name() == "sitting")
         {	
-        	streamName = reader.attributes().value("name").toString();
+        	sittingName = reader.attributes().value("name").toString();
+        	QString sittingID = reader.attributes().value("id").toString();
+        	fileURL = reader.attributes().value("file").toString();
         	//qDebug() << streamName << "streams";
+        	qDebug() << "sitting" << fileURL;
      	}
      	else if (reader.name() == "take")
      	{
-     	    QString takeURL = reader.attributes().value("file").toString();
      	    QString startTime = reader.attributes().value("startTime").toString();
      	    QString endTime = reader.attributes().value("endTime").toString();
-        	QString takeName = streamName + "-" + startTime + "-" + endTime+".ogg";
-        	if (takeURL != "")
+        	QString takeName = sittingName + "-" + startTime + "-" + endTime+".ogg";
+        	
+        	if (fileURL != "")
         	{
         	    //files.insert(files.size(),take);
+        	    QString takeURL = fileURL + "?t=" + startTime + "/" + endTime;
+        	    qDebug() << "Take Name = " << takeName << ", Take URL" << takeURL;
         	    hash.insert(takeName, takeURL);
         	}
+        	
      	}
     }
    // QHash<QString, QString> hash;
@@ -1184,7 +1190,7 @@ void TranscribeWidget::takesDownload( QNetworkReply * reply )
     file.close();
     QFileInfo fileInfo(file);
     QByteArray absfilepath = fileInfo.absoluteFilePath().toAscii(); 
-  //  playlist_Add( THEPL, qtu( toNativeSeparators(absfilepath)) , NULL, PLAYLIST_APPEND , PLAYLIST_END, true, true );
+    playlist->addTakeToPlaylist(fileName, absfilepath);
     qDebug() << "File has been downloaded -> " << fileName;
 }
 
@@ -1410,7 +1416,7 @@ void TranscribeWidget::createActions()
      
      getTakesAct = new QAction("Get Takes", this);
      getTakesAct->setStatusTip("Get Assigned Takes from Bungeni Portal Server");
-    // connect(getTakesAct, SIGNAL(triggered()), this, SLOT(getTakes()));
+     connect(getTakesAct, SIGNAL(triggered()), this, SLOT(takes()));
      
      postTakesAct = new QAction("Post Takes", this);
      postTakesAct->setStatusTip("Post Transcribed Takes to Bungeni Portal Server");
