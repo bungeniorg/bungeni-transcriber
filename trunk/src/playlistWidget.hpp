@@ -53,6 +53,7 @@ class PlaylistWidget : public QWidget
         int getSelected();
         QString getMediaLocation();
         QString getSittingName();
+        void addTakeToPlaylist(QString sittingName, QString mediaFileLocation);
     private:
         QStandardItemModel *model;
         void setupModelView();

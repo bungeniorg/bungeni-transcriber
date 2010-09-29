@@ -111,6 +111,13 @@ void PlaylistWidget :: addItemToPlaylist()
     }
 }
 
+void PlaylistWidget :: addTakeToPlaylist(QString sittingName, QString mediaFileLocation)
+{
+    model->insertRows(model->rowCount(), 1, QModelIndex());
+    model->setData(model->index(model->rowCount()-1, 0, QModelIndex()), sittingName);
+    model->setData(model->index(model->rowCount()-1, 1, QModelIndex()), mediaFileLocation);
+}
+
 void PlaylistWidget :: play(int logicalIndex)
 {
     qDebug() << "doubleclick" << logicalIndex;

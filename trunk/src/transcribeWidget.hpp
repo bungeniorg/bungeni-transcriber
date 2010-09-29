@@ -100,6 +100,7 @@ class TranscribeWidget : public QMainWindow
         void playSlower();
         void getLength();
         void selection(QModelIndex);
+        void takes();
     private:
         TranscribeWidget();
         ~TranscribeWidget();
@@ -128,7 +129,6 @@ class TranscribeWidget : public QMainWindow
         QModelIndex currentIndex;
         QTemporaryFile * writeTemp();
         bool post();
-        bool takes();
         void refresh(const QModelIndex & index);
         bool writeFile(QString fileName);
         QWidget *progressWidget; 
