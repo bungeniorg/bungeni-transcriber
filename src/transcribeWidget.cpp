@@ -926,6 +926,15 @@ bool TranscribeWidget::writeFile(QString fileName)
     {
     	writer.writeStartElement("speech");
     	writer.writeAttribute("person", model->data(model->index(i, 1, QModelIndex()),Qt::DisplayRole).toString());
+    	QString name = model->data(model->index(i, 1, QModelIndex()),Qt::DisplayRole).toString();
+    	if (mphash.value(name, "") != "")
+    	{    
+    	    writer.writeAttribute("person_id",mphash.value(name, ""));
+    	}
+    	else
+    	{
+    	    writer.writeAttribute("person_id", "");
+    	}
     	writer.writeAttribute("startTime", TranscribeWidget::timeSecondstoString(model->data(model->index(i, 2, QModelIndex()),Qt::DisplayRole).toInt()));
     	writer.writeAttribute("endTime", TranscribeWidget::timeSecondstoString(model->data(model->index(i, 3, QModelIndex()),Qt::DisplayRole).toInt()));
         writer.writeCDATA(model->data(model->index(i, 0, QModelIndex()),Qt::DisplayRole).toString());
@@ -968,75 +977,77 @@ QTemporaryFile * TranscribeWidget::writeTemp()
     return file;
 }
 
-bool TranscribeWidget::post()
+void TranscribeWidget::post()
 {
+    if (fileName != "")
+    {
+        this->saveFile();
+    }
+    qDebug() << "POSTING TAKES";
+    QString string;
+    QXmlStreamWriter writer(&string);
+    writer.writeStartDocument();
+    writer.writeDTD("<!DOCTYPE trs>");
+    writer.writeStartElement("trs");
 
-if (fileName != "")
-{
-    this->saveFile();
-}
+    QHashIterator<QString, QString> i(hash);
+    QStandardItemModel * localmodel = playlist->getModel();
+    int c=0;
+    while (c <= localmodel->rowCount()){
+        QString takeName = localmodel->data(localmodel->index(c, 0)).toString();
+        QString sittingID = takeName.section("-", -1, -1);
+        QString endTime = takeName.section("-", -2, -2);
+        QString startTime = takeName.section("-", -3, -3);
+        QString trsfileName = localmodel->data(localmodel->index(c, 2)).toString();
+        QFile newfile(trsfileName);
+        writer.writeStartElement("take");
+        writer.writeAttribute("sittingID", sittingID);
+        writer.writeAttribute("startTime", startTime);
+        writer.writeAttribute("endTime", endTime);
+	    if (newfile.open(QFile::ReadOnly | QFile::Text)) {
+            QXmlStreamReader reader;
+   	        reader.setDevice(&newfile);
+     	    while (!reader.atEnd()) {
+        	    reader.readNext();
+        	    if (reader.name() == "speech")
+        	    {	
+        		    writer.writeCurrentToken(reader);
+        		    writer.writeCharacters(reader.readElementText());
+        		    writer.writeEndElement();
+     		    }
+    	    }
+        }	
+        writer.writeEndElement();    
+	    newfile.close();
+	    c++;
+    }
+    writer.writeEndElement();
+    writer.writeEndDocument();
+    qDebug() << string;
 
-QString string;
-QXmlStreamWriter writer(&string);
-writer.writeStartDocument();
-writer.writeDTD("<!DOCTYPE trs>");
-writer.writeStartElement("trs");
+    FormPostPlugin * post = new FormPostPlugin();
 
-QHashIterator<QString, QString> i(hash);
+    QSettings settings("transcribe.conf", QSettings::IniFormat);
+    settings.beginGroup("Network");
+    QString str = "http://"+settings.value("hostname").toString()+":"+settings.value("port").toString()+"/speechxml";
+    post->addField("form.xml", string);
+    post->addField("form.actions.post", "Post");
+    settings.endGroup();
+    QNetworkReply *reply = post->postData(str);
 
-while (i.hasNext()) {
-    i.next();
-    QString fileName = i.key() + ".trs";
-    QFile newfile(fileName);
-    writer.writeStartElement("take");
-    writer.writeAttribute("sitting", i.key().section("-",0,0));
-    writer.writeAttribute("startTime", i.key().section("-",1,1));
-    qDebug() << i.key().section("-",0,0);
-	if (newfile.open(QFile::ReadOnly | QFile::Text)) {
-        QXmlStreamReader reader;
-   	    reader.setDevice(&newfile);
-     	while (!reader.atEnd()) {
-        	reader.readNext();
-        	if (reader.name() == "speech")
-        	{	
-        		 writer.writeCurrentToken(reader);
-        		 writer.writeCharacters(reader.readElementText());
-        		 writer.writeEndElement();
-     		}
-    	}
-    }	
-    writer.writeEndElement();    
-	newfile.close();
-}
-writer.writeEndElement();
-writer.writeEndDocument();
-qDebug() << string;
-
-FormPostPlugin * post = new FormPostPlugin();
-
-QSettings settings("transcribe.conf", QSettings::IniFormat);
-settings.beginGroup("Network");
-QString str = "http://"+settings.value("hostname").toString()+"/mediawiki/index.php/Special:Speech_from_VLC";
-post->addField("string", string);
-settings.endGroup();
-QNetworkReply *reply = post->postData(str);
-
-connect( reply, SIGNAL(finished()), this, SLOT(postFinished()) );
-
-
-return true;
-
+    connect( reply, SIGNAL(finished()), this, SLOT(postFinished()) );
 }
 
 void TranscribeWidget::postFinished()
 {
     QNetworkReply *reply = qobject_cast<QNetworkReply*>(QObject::sender());
     QByteArray ba = reply->readAll();
-
-  qDebug() << ba;
-  qDebug() << reply->url();
-  QMessageBox::information(0, "Success", "Speeches successfully posted to Bungeni");
+    qDebug() << ba;
+    qDebug() << reply->url();
+    QMessageBox::information(0, "Success", "Speeches successfully posted to Bungeni");
 }
+
+
 
 void TranscribeWidget::takes()
 {  
@@ -1053,9 +1064,48 @@ void TranscribeWidget::takes()
     posta->addField("actions.login", "Login");
     reply = posta->postData(url);
     connect( reply, SIGNAL(finished()), this, SLOT(slotReadyRead()) );
+    connect( reply, SIGNAL(finished()), this, SLOT(getMPList()) );
     settings.endGroup();
 }
 
+void TranscribeWidget::getMPList()
+{
+    QNetworkRequest request;
+    QSettings settings("transcribe.conf", QSettings::IniFormat);
+    settings.beginGroup("Network");
+    QString url = "http://"+settings.value("hostname").toString()+":"+settings.value("port").toString()+"/mpslistxml";
+    request.setUrl(QUrl(url));
+    qDebug() << url;
+    reply = posta->http->get(request);
+    connect( reply, SIGNAL(finished()), this, SLOT(MPListReply()) );
+    settings.endGroup();
+}
+
+void TranscribeWidget::MPListReply()
+{
+    QXmlStreamReader reader;
+    QByteArray data = posta->response();
+    reader.addData(data);
+    while (!reader.atEnd()) {
+        reader.readNext();
+        if (reader.name() == "mp")
+        {
+        	QString MPName = reader.attributes().value("name").toString();
+        	QString MPid = reader.attributes().value("id").toString();
+        	if ((MPName != "") && (MPid != ""))
+        	{
+        	    mphash.insert(MPName, MPid);
+        	}
+        }
+    }
+    QHashIterator<QString, QString> i(mphash);
+    QStringList mplist;
+    while (i.hasNext()) {
+        i.next();
+        mplist.append(i.key());
+    }
+    delegate->setMPList(mplist);
+}
 
 void TranscribeWidget::slotReadyRead()
 {
@@ -1083,6 +1133,7 @@ void TranscribeWidget::takesReply()
     reader.addData(data);
     QStringList files;
     QString fileURL = "";
+    QString sittingID = "";
     while (!reader.atEnd()) {
         reader.readNext();
         if (reader.name() == "assignment")
@@ -1093,7 +1144,7 @@ void TranscribeWidget::takesReply()
         else if (reader.name() == "sitting")
         {	
         	sittingName = reader.attributes().value("name").toString();
-        	QString sittingID = reader.attributes().value("id").toString();
+        	sittingID = reader.attributes().value("id").toString();
         	fileURL = reader.attributes().value("file").toString();
         	//qDebug() << streamName << "streams";
         	qDebug() << "sitting" << fileURL;
@@ -1102,11 +1153,12 @@ void TranscribeWidget::takesReply()
      	{
      	    QString startTime = reader.attributes().value("startTime").toString();
      	    QString endTime = reader.attributes().value("endTime").toString();
-        	QString takeName = sittingName + "-" + startTime + "-" + endTime+".ogg";
         	
-        	if (fileURL != "")
+        	
+        	if ((fileURL != "") && (startTime != "") && (endTime != ""))
         	{
         	    //files.insert(files.size(),take);
+        	    QString takeName = sittingName + "-" + startTime + "-" + endTime + "-" +sittingID;
         	    QString takeURL = fileURL + "?t=" + startTime + "/" + endTime;
         	    qDebug() << "Take Name = " << takeName << ", Take URL" << takeURL;
         	    hash.insert(takeName, takeURL);
@@ -1176,7 +1228,7 @@ void TranscribeWidget::takesDownload( QNetworkReply * reply )
     QString url = reply->url().toString();
     //qDebug() << url;
     QString fileName = hash.key(url);
-    QFile file(fileName);
+    QFile file("tmp/"+fileName);
     if (!file.open(QIODevice::WriteOnly))
     {
         qDebug() << "error opening media file";
@@ -1190,7 +1242,8 @@ void TranscribeWidget::takesDownload( QNetworkReply * reply )
     file.close();
     QFileInfo fileInfo(file);
     QByteArray absfilepath = fileInfo.absoluteFilePath().toAscii(); 
-    playlist->addTakeToPlaylist(fileName, absfilepath);
+    QString trsfile = "tmp/"+fileName + ".trs";
+    playlist->addTakeToPlaylist(fileName, absfilepath, trsfile);
     qDebug() << "File has been downloaded -> " << fileName;
 }
 
@@ -1420,7 +1473,7 @@ void TranscribeWidget::createActions()
      
      postTakesAct = new QAction("Post Takes", this);
      postTakesAct->setStatusTip("Post Transcribed Takes to Bungeni Portal Server");
-    // connect(postTakesAct, SIGNAL(triggered()), this, SLOT(getTakes()));
+     connect(postTakesAct, SIGNAL(triggered()), this, SLOT(post()));
       
      exitAct = new QAction("E&xit", this);
      //exitAct->setShortcut("Ctrl+Q");
