@@ -41,6 +41,7 @@ class ListViewDelegate : public QAbstractItemDelegate {
 private:
     QModelIndex current;
     bool editing;
+    QStringList MPList;
 public:
 	ListViewDelegate(QObject *parent);
     void paint(QPainter *painter, const QStyleOptionViewItem &option, const QModelIndex &index) const;                 
@@ -50,6 +51,7 @@ public:
     void setModelData ( QWidget * editor, QAbstractItemModel * model, const QModelIndex & index ) const;
     void updateEditorGeometry ( QWidget * editor, const QStyleOptionViewItem & option, const QModelIndex & index ) const;
     QWidget * createEditor ( QWidget * parent, const QStyleOptionViewItem & option, const QModelIndex & index ) const;
+    void setMPList(QStringList);
 public slots:
     void currentEditing(QModelIndex index);
     void display(QModelIndex index);

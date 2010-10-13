@@ -110,12 +110,16 @@ void PlaylistWidget :: addItemToPlaylist()
         //model->setData(model->index(model->rowCount()-1, 2, QModelIndex()), transcriptFileLocation);
     }
 }
-
-void PlaylistWidget :: addTakeToPlaylist(QString sittingName, QString mediaFileLocation)
+QStandardItemModel * PlaylistWidget :: getModel()
+{
+    return model;
+}
+void PlaylistWidget :: addTakeToPlaylist(QString sittingName, QString mediaFileLocation, QString trsFile)
 {
     model->insertRows(model->rowCount(), 1, QModelIndex());
     model->setData(model->index(model->rowCount()-1, 0, QModelIndex()), sittingName);
     model->setData(model->index(model->rowCount()-1, 1, QModelIndex()), mediaFileLocation);
+    model->setData(model->index(model->rowCount()-1, 2, QModelIndex()), trsFile);
 }
 
 void PlaylistWidget :: play(int logicalIndex)

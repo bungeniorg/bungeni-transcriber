@@ -56,6 +56,7 @@ InplaceEditor::InplaceEditor(QWidget * parent) : QWidget(parent)
     speechText->setSizePolicy(sizePolicy);
     ui.gridLayout->addWidget(speechText, 3, 0, 1, 7);
     
+    
     QObject::connect(ui.startTime, SIGNAL(timeChanged( const QTime & )), this, SLOT(updateStartTime( const QTime &)));
     QObject::connect(ui.endTime, SIGNAL(timeChanged( const QTime & )), this, SLOT(updateEndTime( const QTime &)));
     QObject::connect(horizontalSlider, SIGNAL( lowerValueChanged( int ) ), this, SLOT( updateStartTime( int ) ));
@@ -82,6 +83,13 @@ void InplaceEditor::setValues(QString _name, QString _speech, int _startTime, in
     speechText->setText(_speech);
 }
 */
+
+void InplaceEditor::setAutoCompleteWordlist(const QStringList & wordlist )
+{
+    QCompleter *completer = new QCompleter(wordlist);
+    completer->setCaseSensitivity(Qt::CaseInsensitive);
+    ui.name->setCompleter(completer);
+}
 
 void InplaceEditor::updateEndTime( const QTime & time )
 {
@@ -271,8 +279,8 @@ QString InplaceEditor::getName()
 
 QString InplaceEditor::getSpeech()
 {
-    //return ui.speech->toPlainText();
-    return speechText->toHtml();
+    return speechText->toPlainText();
+    //return speechText->toHtml();
 }
 
 

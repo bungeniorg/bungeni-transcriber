@@ -37,7 +37,7 @@
 #include <QTimeEdit>
 #include <QModelIndex>
 #include "customTextEdit.hpp"
-
+#include <QCompleter>
 class InplaceEditor : public QWidget
 {
     Q_OBJECT
@@ -59,6 +59,7 @@ public:
     void setEndTime(int);
     void setIndex(const QModelIndex& );
     void setDuration(int);
+    void setAutoCompleteWordlist(const QStringList &);
 private:
     QString timeSecondstoString(int time);
     Ui::inPlaceEditor ui;

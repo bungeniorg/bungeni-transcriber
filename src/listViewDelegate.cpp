@@ -35,7 +35,7 @@
 #include <QModelIndex>
 #include <QPainter>
 #include <QDebug>
-
+#include <QCompleter>
 ListViewDelegate::ListViewDelegate(QObject *parent)
     		: QAbstractItemDelegate(parent)
 	{
@@ -166,6 +166,12 @@ QString ListViewDelegate::timeSecondstoString(const int time) const
  {
      InplaceEditor *editor = new InplaceEditor(parent);
      editor->setIndex(index);
+     
+     if (!MPList.isEmpty())
+     {
+        editor->setAutoCompleteWordlist(MPList);
+     }
+     
      QObject::connect( editor, SIGNAL(close(QWidget *)), this, SLOT( editorClose(QWidget *) ) );
      QObject::connect( this, SIGNAL(commitData(QWidget *)), this, SIGNAL( closeEditor(QWidget *) ) );
      
@@ -252,4 +258,9 @@ void ListViewDelegate::display(QModelIndex index)
     //static_cast<QWidget*>(QObject::sender())->repaint();
     qDebug( "display entered" );
     emit sizeHintChanged(index);
+}
+
+void ListViewDelegate::setMPList(QStringList list)
+{
+    MPList = list;
 }
