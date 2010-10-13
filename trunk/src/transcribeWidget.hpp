@@ -101,6 +101,9 @@ class TranscribeWidget : public QMainWindow
         void getLength();
         void selection(QModelIndex);
         void takes();
+        void getMPList();
+        void MPListReply();
+        void post();
     private:
         TranscribeWidget();
         ~TranscribeWidget();
@@ -128,7 +131,6 @@ class TranscribeWidget : public QMainWindow
         QString timeSecondstoString(int time);
         QModelIndex currentIndex;
         QTemporaryFile * writeTemp();
-        bool post();
         void refresh(const QModelIndex & index);
         bool writeFile(QString fileName);
         QWidget *progressWidget; 
@@ -137,6 +139,7 @@ class TranscribeWidget : public QMainWindow
         FormPostPlugin * posta;
         QNetworkReply *reply;
         QHash<QString, QString> hash;
+        QHash<QString, QString> mphash;
         QTimer *poller;
         bool loadFile(QString newfileName);
         void createActions();
