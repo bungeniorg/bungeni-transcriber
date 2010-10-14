@@ -55,6 +55,7 @@ TranscribeWidget::TranscribeWidget() : QMainWindow()
     delegate = new ListViewDelegate(this);
     QObject::connect( ui.addButton, SIGNAL(clicked()), this, SLOT(addSpeech()) );
     QObject::connect( ui.removeButton, SIGNAL(clicked()), this, SLOT(removeSpeech()) );
+    QObject::connect( ui.agendaItemButton, SIGNAL(clicked()), this, SLOT(addAgendaItem()) );
     QObject::connect( ui.table, SIGNAL(doubleClicked(QModelIndex)), delegate, SLOT(currentEditing(QModelIndex)));
     QObject::connect( ui.table, SIGNAL(clicked(QModelIndex)), delegate, SLOT(display(QModelIndex)));
     QObject::connect( ui.table, SIGNAL(clicked(QModelIndex)), this, SLOT(selection(QModelIndex)));
@@ -470,6 +471,7 @@ void TranscribeWidget::addSpeech()
 	    model->setData(model->index(model->rowCount()-1, 1, QModelIndex()), "Name of Person");
         model->setData(model->index(model->rowCount()-1, 0, QModelIndex()), "Speech Text");
         model->setData(model->index(model->rowCount()-1, 4, QModelIndex()), false);
+        model->setData(model->index(model->rowCount()-1, 5, QModelIndex()), true);
 	    if (model->rowCount() == 1)
         {  
       		    model->setData(model->index(0, 2, QModelIndex()), 0);
@@ -501,10 +503,56 @@ void TranscribeWidget::addSpeech()
     }
 }
 
-
+void TranscribeWidget::addAgendaItem()
+{
+	qDebug( "Add Agenda Item entered" );
+	int i_length = _file_duration;
+	if (playlist->getSelected()>=0)
+	{
+	    model->insertRows(model->rowCount(), 1, QModelIndex());
+        model->setData(model->index(model->rowCount()-1, 5, QModelIndex()), false);
+	    if (model->rowCount() == 1)
+        {  
+      		    model->setData(model->index(0, 2, QModelIndex()), 0);
+      		    if (i_length < 120)
+     			    model->setData(model->index(0, 3, QModelIndex()), i_length);
+     		    else
+     			    model->setData(model->index(0, 3, QModelIndex()), 120);
+     			qDebug( "model->rowCount() = 1" );
+        }
+        else
+        {
+     	    int end = model->data(model->index(model->rowCount()-2, 3, QModelIndex())).toInt();
+     	    if ((end+120) < i_length)
+     	    {
+     		    model->setData(model->index(model->rowCount()-1, 2, QModelIndex()), QVariant(end));
+			    model->setData(model->index(model->rowCount()-1, 3, QModelIndex()), QVariant(end+120));
+		    }
+		    else
+		    {
+			    model->setData(model->index(model->rowCount()-1, 2, QModelIndex()), QVariant(end));
+			    model->setData(model->index(model->rowCount()-1, 3, QModelIndex()), QVariant(i_length));
+		    }
+		    qDebug( "model->rowCount() > 1" );
+        }
+    }
+    else
+    {
+        QMessageBox::warning(this, tr("Error"),"Please add/select a file from the playlist");
+    }
+}
 void TranscribeWidget::setupModelView()
 {
-    model = new QStandardItemModel(0,5,this);
+    model = new QStandardItemModel(0,8,this);
+    // Column 0 - Person Name
+    // Column 1 - Speech
+    // Column 2 - End Time
+    // Column 3 - Start Time
+    // Column 4 - Incomplete or not
+    // Column 5 - Boolean - Speech(true) or Agenda Item(false)
+    // Column 6 - Agenda Item string
+    // Column 7 - Agenda Item ID
+    
     
 	ui.table->setItemDelegate(delegate);
 	ui.table->setAlternatingRowColors(true);

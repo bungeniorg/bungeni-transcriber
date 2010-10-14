@@ -104,6 +104,7 @@ class TranscribeWidget : public QMainWindow
         void getMPList();
         void MPListReply();
         void post();
+        void addAgendaItem();
     private:
         TranscribeWidget();
         ~TranscribeWidget();
