@@ -77,7 +77,7 @@ class TranscribeWidget : public QMainWindow
         void openFile();
         void newFile();
         void slotError(QNetworkReply::NetworkError);
-        void slotReadyRead();
+        void getTakesLoginComplete();
         void progress ( qint64, qint64 );
         void takesReply();
         void takesDownload( QNetworkReply * reply );
