@@ -55,6 +55,7 @@ class PlaylistWidget : public QWidget
         QString getSittingName();
         void addTakeToPlaylist(QString sittingName, QString mediaFileLocation, QString trsFile);
         QStandardItemModel * getModel();
+        void clearPlaylist();
     private:
         QStandardItemModel *model;
         void setupModelView();
@@ -69,6 +70,7 @@ class PlaylistWidget : public QWidget
         void addItemToPlaylist();
         void addToPlaylistDialog();
         void play(int logicalIndex);
+        void play(const QModelIndex & index);
         void prev();
         void next();
     signals:

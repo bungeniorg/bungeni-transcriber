@@ -29,12 +29,15 @@
 #include <QXmlStreamReader>
 #include <QFile>
 #include <QMessageBox>
+#include <QAbstractItemView>
 PlaylistWidget :: PlaylistWidget() : QWidget()
 {
     this->setupModelView();
-    
+    table->setEditTriggers(QAbstractItemView::NoEditTriggers);
+    table->setSelectionBehavior(QAbstractItemView::SelectRows);
     QObject::connect( addToPlaylistButton, SIGNAL(clicked()), this, SLOT(addToPlaylistDialog()));
     QObject::connect( table->verticalHeader(), SIGNAL( sectionDoubleClicked( int ) ), this, SLOT( play( int ) ) );
+    QObject::connect( table, SIGNAL( doubleClicked( const QModelIndex & ) ), this, SLOT( play( const QModelIndex & ) ) );
 }
 
 PlaylistWidget :: ~PlaylistWidget()
@@ -134,6 +137,16 @@ void PlaylistWidget :: play(int logicalIndex)
     
     emit playMediaFile(mediaFilePath);
 }
+
+void PlaylistWidget :: play(const QModelIndex & index)
+{
+    emit loadTranscriptFile(current, model->data(index).toString());
+    qDebug() << "other play executed";
+    current = index.row();
+    QString mediaFilePath = model->data(model->index(index.row(), 1)).toString();
+    
+    emit playMediaFile(mediaFilePath);
+}
 //This is bad, very bad
 //TODO : FIX ME
 void PlaylistWidget :: setTranscriptFileLocation(QString transcriptFileLocation, int logicalIndex)
@@ -185,6 +198,11 @@ QString PlaylistWidget :: getMediaLocation()
 QString PlaylistWidget :: getSittingName()
 {
      return model->data(model->index(current, 0)).toString();
+}
+
+void PlaylistWidget :: clearPlaylist()
+{
+
 }
 
 void PlaylistWidget :: setupModelView()
