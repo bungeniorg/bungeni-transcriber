@@ -7,7 +7,7 @@
 class FormPost
 {
   public:
-   virtual ~FormPost() {}
+    virtual ~FormPost() {}
     virtual QString userAgent() = 0;
     virtual void setUserAgent(QString agent) = 0;
     virtual QString referer() = 0;
