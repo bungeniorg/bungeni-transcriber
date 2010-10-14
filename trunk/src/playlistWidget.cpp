@@ -202,7 +202,8 @@ QString PlaylistWidget :: getSittingName()
 
 void PlaylistWidget :: clearPlaylist()
 {
-
+    qDebug() << "Clear playlist";
+    model->removeRows(0,model->rowCount());
 }
 
 void PlaylistWidget :: setupModelView()

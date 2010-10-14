@@ -45,12 +45,6 @@
 #include "hotkeyWidget.hpp"
 #include "settings.hpp"
 
-//Use taglib for now since libvlc doesnt get correct file length
-//TO DO : Remove
-//#include <taglib/tag.h>
-//#include <taglib/fileref.h>
-//#include <taglib/tfile.h>
-
 
 TranscribeWidget * TranscribeWidget::instance = NULL;
 
@@ -62,8 +56,8 @@ TranscribeWidget::TranscribeWidget() : QMainWindow()
     QObject::connect( ui.addButton, SIGNAL(clicked()), this, SLOT(addSpeech()) );
     QObject::connect( ui.removeButton, SIGNAL(clicked()), this, SLOT(removeSpeech()) );
     QObject::connect( ui.table, SIGNAL(doubleClicked(QModelIndex)), delegate, SLOT(currentEditing(QModelIndex)));
-   QObject::connect( ui.table, SIGNAL(clicked(QModelIndex)), delegate, SLOT(display(QModelIndex)));
-   QObject::connect( ui.table, SIGNAL(clicked(QModelIndex)), this, SLOT(selection(QModelIndex)));
+    QObject::connect( ui.table, SIGNAL(clicked(QModelIndex)), delegate, SLOT(display(QModelIndex)));
+    QObject::connect( ui.table, SIGNAL(clicked(QModelIndex)), this, SLOT(selection(QModelIndex)));
     this->setupModelView();
     fileName="";
     
@@ -85,8 +79,6 @@ TranscribeWidget::TranscribeWidget() : QMainWindow()
     // Note: if you use streaming, there is no ability to use the position slider
    // ui.positionSlider->setMaximum(POSITION_RESOLUTION);
 
-    
-    
     ui.gridLayout_2->addWidget(video, 0, 0, 1, 3);
     
     controls = new ControlsWidget();
@@ -120,24 +112,18 @@ TranscribeWidget::TranscribeWidget() : QMainWindow()
     libvlc_exception_init(&_vlcexcep);
 
     //create a new libvlc instance
-    _vlcinstance=libvlc_new(sizeof(vlc_args) / sizeof(vlc_args[0]), vlc_args,&_vlcexcep);  //tricky calculation of the char space used
+    _vlcinstance=libvlc_new(sizeof(vlc_args) / sizeof(vlc_args[0]), vlc_args,&_vlcexcep);  
     raise (&_vlcexcep);
     
     // Create a media player playing environement 
     _mp = libvlc_media_player_new (_vlcinstance, &_vlcexcep);
     raise (&_vlcexcep);
 
-    //connect the two sliders to the corresponding slots (uses Qt's signal / slots technology)
+    //connect the two sliders to the corresponding slots 
     connect(poller, SIGNAL(timeout()), this, SLOT(updateInterface()));
     connect(controls, SIGNAL(sliderMoved(int)), this, SLOT(changePosition(int)));
-    
 
     poller->start(100); //start timer to trigger every 100 ms the updateInterface slot
-    
-    
-    
-    
-    
 }
 
 
@@ -253,25 +239,8 @@ void TranscribeWidget::playSlower()
     
 }
 
-
-
-
 void TranscribeWidget::loadMetaData(QString file)
 {
-    /*
-    QByteArray fileName = QFile::encodeName( file );
-    const char * encodedName = fileName.constData();
-    TagLib::FileRef fileref = TagLib::FileRef( encodedName, false );
-    if (fileref.isNull())
-    {
-       qDebug() << "Null";
-    }
-    else
-    {
-       qDebug() << "Not Null";
-    }
-    */
-    //file duration in seconds
     _file_duration = libvlc_media_player_get_length( _mp, &_vlcexcep) / 1000;
      raise(&_vlcexcep);
      qDebug() << "file duration = " << _file_duration ;
@@ -350,63 +319,6 @@ void TranscribeWidget::playFile(QString file)
     libvlc_media_player_play (_mp, &_vlcexcep );
     raise(&_vlcexcep);
 
-
-     
-     
-    // qDebug() << "file duartion" << _file_duration;
-     //controls->setDuration(_file_duration);
-     
-     //get file duration using taglib since libvlc sucks
-     
-   //  std::String filePath = file.toStdString ();
-     //char * filePath;
-     
-    // filePath = new char [file.size()+1];
-    // strcpy (filePath, file.toStdString().c_str());
-
-    // qDebug() << filePath;
-     
-    // TagLib::FileRef f(filePath);
-   //  this->currentFileDuration = f.file()->length(); 
-    
-     //  TagLib::FileRef f(filePath);
-     //  if (!f.isNull())
-      //      TagLib::String artist = f.tag()->artist();      
-    //
-     //qDebug() << "Artist" << QString(artist.toCString());
-     
-     /*
-     
-    #ifdef Q_OS_WIN
-        const wchar_t * encodedName = reinterpret_cast<const wchar_t*>(file.utf16());
-    #else
-        const char * encodedName = QFile::encodeName(file).constData();
-    #endif
-
-    TagLib::FileRef fileRef(encodedName); 
-     qDebug() << encodedName;
-     if (!fileRef.isNull())
-     {
-       //TagLib::String artist = f.tag()->artist(); 
-       qDebug() << "Not Null";
-     }
-     else
-     {
-        qDebug() << "Null";
-     }
-     */
-     
-     
-   // TagLib::String str(Qt4QStringToTString(file));
-    //TagLib::FileRef fileRef(str.toCString());
-     
-    // long duration = fileRef.file()->length(); 
-    //    qDebug() << "duration = " << duration;
-     
-     //TagLib::Tag * tag = fileRef.tag(); 
-    // if (tag) {
-     //   if (!tag->isEmpty()) {
-     //           _title = TStringToQString(tag->title()).trimmed(); 
     _isPlaying=true;
     controls->changeIcon(true);
     
@@ -421,19 +333,6 @@ void TranscribeWidget::playFile(QString file)
     
     QObject::connect( controls, SIGNAL(playSignal()), timer, SLOT(start()));
     QObject::connect(timer, SIGNAL(timeout()), this, SLOT(getLength()));
-    //this->getLength();
-    //setup event
-  //  p_event_manager = libvlc_media_player_event_manager( _mp, &_vlcexcep );
-  //  raise(&_vlcexcep);
-   // libvlc_event_attach ( p_event_manager, libvlc_MediaPlayerEndReached, end_reached_callback, NULL, &_vlcexcep);
-	//raise(&_vlcexcep); 	
-	
-	
-	// parse file metadata
-	//p_event_manager = libvlc_media_event_manager( _m, &_vlcexcep );
-   // raise(&_vlcexcep);
-   // libvlc_event_attach ( p_event_manager, libvlc_MediaPreparsedChanged, media_preparsed_callback, NULL, &_vlcexcep);
-	//raise(&_vlcexcep);
 }
 
 void TranscribeWidget::changeVolume(int newVolume)
@@ -486,11 +385,7 @@ void TranscribeWidget::updateInterface()
     //qDebug() << "Update Interface" << _file_duration;
     int siderPos=(int)(pos*(float)(_file_duration));
    // ui.positionSlider->setValue(siderPos);
-   controls->updateSlider(siderPos);
-   
-
-     
-    
+   controls->updateSlider(siderPos);  
 }
 
 void TranscribeWidget::selection(QModelIndex)
@@ -510,7 +405,7 @@ void TranscribeWidget::getLength()
 {
     //in seconds
     
-       _file_duration = libvlc_media_player_get_length( _mp, &_vlcexcep) / 1000;
+      _file_duration = libvlc_media_player_get_length( _mp, &_vlcexcep) / 1000;
      raise(&_vlcexcep);
      qDebug() << "get length file duration = " << _file_duration ;
      
@@ -617,6 +512,7 @@ void TranscribeWidget::setupModelView()
 	filterModel = new QSortFilterProxyModel();
     filterModel->setSourceModel(model);
 	filterModel->setDynamicSortFilter(true);
+	//Sort by start time
     filterModel->sort(2, Qt::AscendingOrder);
     ui.table->setModel(filterModel);
      	
@@ -792,10 +688,9 @@ void TranscribeWidget::loadNextFileSlot(int currentLogicalIndex, QString newfile
 
 bool TranscribeWidget::loadFile(QString newfileName)
 {
-	
+	model->removeRows(0, model->rowCount(QModelIndex()), QModelIndex());
 	if (newfileName == "")
 	{
-	    model->removeRows(0, model->rowCount(QModelIndex()), QModelIndex());
 	    fileName = newfileName;
 	    return true;
 	}
@@ -1063,7 +958,7 @@ void TranscribeWidget::takes()
     posta->addField("password", password);
     posta->addField("actions.login", "Login");
     reply = posta->postData(url);
-    connect( reply, SIGNAL(finished()), this, SLOT(slotReadyRead()) );
+    connect( reply, SIGNAL(finished()), this, SLOT(getTakesLoginComplete()) );
     connect( reply, SIGNAL(finished()), this, SLOT(getMPList()) );
     settings.endGroup();
 }
@@ -1107,12 +1002,9 @@ void TranscribeWidget::MPListReply()
     delegate->setMPList(mplist);
 }
 
-void TranscribeWidget::slotReadyRead()
+void TranscribeWidget::getTakesLoginComplete()
 {
     QByteArray data = posta->response();
-    QByteArray cookie = reply->rawHeader("Set-Cookie");
-    //qDebug() << data;
-    qDebug() << cookie;
     QNetworkRequest request;
     QSettings settings("transcribe.conf", QSettings::IniFormat);
     settings.beginGroup("Network");
@@ -1182,6 +1074,8 @@ void TranscribeWidget::takesReply()
     progress.setWindowModality(Qt::WindowModal);
     int counter = 1;
    // playlist_Clear(THEPL, true);
+    playlist->clearPlaylist();
+    model->removeRows(0, model->rowCount(QModelIndex()), QModelIndex());
     progress.setValue(0);
     while (i.hasNext()) {
         i.next();
