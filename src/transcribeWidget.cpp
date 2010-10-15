@@ -511,6 +511,7 @@ void TranscribeWidget::addAgendaItem()
 	{
 	    model->insertRows(model->rowCount(), 1, QModelIndex());
         model->setData(model->index(model->rowCount()-1, 5, QModelIndex()), false);
+        model->setData(model->index(model->rowCount()-1, 6, QModelIndex()), "");
 	    if (model->rowCount() == 1)
         {  
       		    model->setData(model->index(0, 2, QModelIndex()), 0);
@@ -546,8 +547,8 @@ void TranscribeWidget::setupModelView()
     model = new QStandardItemModel(0,8,this);
     // Column 0 - Person Name
     // Column 1 - Speech
-    // Column 2 - End Time
-    // Column 3 - Start Time
+    // Column 2 - Start Time
+    // Column 3 - End Time
     // Column 4 - Incomplete or not
     // Column 5 - Boolean - Speech(true) or Agenda Item(false)
     // Column 6 - Agenda Item string
@@ -1105,6 +1106,15 @@ void TranscribeWidget::takesReply()
         	}
         	
      	}
+     	else if (reader.name() == "agenda_item")
+     	{
+     	    QString agenda_item_title = reader.attributes().value("title").toString();
+     	    QString agenda_item_id = reader.attributes().value("id").toString();
+     	    if ((agenda_item_title != "") && (agenda_item_id != ""))
+        	{
+        	    agendahash.insert(agenda_item_title, agenda_item_id);
+        	}
+     	}
     }
    // QHash<QString, QString> hash;
     QNetworkRequest request;
@@ -1116,7 +1126,15 @@ void TranscribeWidget::takesReply()
     connect(&tT, SIGNAL(timeout()), &q, SLOT(quit()));
     connect( &networkmanager, SIGNAL(finished( QNetworkReply* )), this, SLOT(takesDownload( QNetworkReply* )) );
     connect(&networkmanager, SIGNAL(finished(QNetworkReply*)), &q, SLOT(quit()));
-
+    
+    QHashIterator<QString, QString> a(agendahash);
+    QStringList agendalist;
+    while (a.hasNext()) {
+        a.next();
+        agendalist.append(a.key());
+    }
+    delegate->setAgendaList(agendalist);
+    
     QHashIterator<QString, QString> i(hash);
     QProgressDialog progress("Downloading Takes", "Abort", 0, hash.size(), this);
     progress.setWindowModality(Qt::WindowModal);

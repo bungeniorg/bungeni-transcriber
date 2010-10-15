@@ -91,7 +91,7 @@
         <item row="1" column="2">
          <widget class="QPushButton" name="addButton">
           <property name="text">
-           <string>+ Add</string>
+           <string>+ Speech</string>
           </property>
          </widget>
         </item>
@@ -105,7 +105,7 @@
         <item row="1" column="1">
          <widget class="QPushButton" name="agendaItemButton">
           <property name="text">
-           <string>Agenda Item</string>
+           <string>+ Agenda Item</string>
           </property>
          </widget>
         </item>

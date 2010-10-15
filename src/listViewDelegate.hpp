@@ -42,6 +42,7 @@ private:
     QModelIndex current;
     bool editing;
     QStringList MPList;
+    QStringList agendaList;
 public:
 	ListViewDelegate(QObject *parent);
     void paint(QPainter *painter, const QStyleOptionViewItem &option, const QModelIndex &index) const;                 
@@ -52,6 +53,7 @@ public:
     void updateEditorGeometry ( QWidget * editor, const QStyleOptionViewItem & option, const QModelIndex & index ) const;
     QWidget * createEditor ( QWidget * parent, const QStyleOptionViewItem & option, const QModelIndex & index ) const;
     void setMPList(QStringList);
+    void setAgendaList(QStringList);
 public slots:
     void currentEditing(QModelIndex index);
     void display(QModelIndex index);
