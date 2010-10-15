@@ -85,6 +85,8 @@ void ListViewDelegate::paint(QPainter *painter, const QStyleOptionViewItem &opti
    	    QModelIndex endTimeIndex = index.model()->index( index.row() , 3);
    	    QModelIndex agendaItemIndex = index.model()->index( index.row() , 6);
    	    QString agendaItemTxt = agendaItemIndex.data(Qt::DisplayRole).toString();
+   	    i_startTime = startTimeIndex.data(Qt::DisplayRole).toInt();
+  	    i_endTime = endTimeIndex.data(Qt::DisplayRole).toInt();
    	    QString startTimeTxt = "Start Time : "+this->timeSecondstoString(i_startTime);
   	    QString endTimeTxt = "End Time : "+this->timeSecondstoString(i_endTime);
    	    QRect rStartTime = option.rect.adjusted(2, 2, 200, 29);
@@ -94,7 +96,7 @@ void ListViewDelegate::paint(QPainter *painter, const QStyleOptionViewItem &opti
   	    painter->drawText(rEndTime.left(), rEndTime.top(), rEndTime.width(), rEndTime.height(), Qt::AlignTop|Qt::AlignLeft|Qt::TextWordWrap, endTimeTxt, &rEndTime);
   	    
   	    QRect rText = option.rect.adjusted(2, 30, 200, -2);
-  	    painter->drawText(rText.left(), rText.top(), rText.width(), rText.height(), Qt::AlignTop|Qt::AlignLeft|Qt::TextWordWrap, agendaItemTxt, &rText);
+  	    painter->drawText(rText.left(), rText.top(), rText.width(), rText.height(), Qt::AlignTop|Qt::AlignLeft|Qt::TextWordWrap, "Agenda Item : "+agendaItemTxt, &rText);
   	    
     }
   	
@@ -109,8 +111,15 @@ QSize ListViewDelegate::sizeHint(const QStyleOptionViewItem &option,
        {
             if (current == index)
             {
-                //qDebug() << "Yes";
-    			return QSize(option.rect.width(), 350);	
+                bool type = index.model()->index( index.row() , 5).data(Qt::DisplayRole).toBool();
+                if (type == true)	
+                {
+    			    return QSize(option.rect.width(), 350);
+    			}
+    			else
+    			{
+    			    return QSize(option.rect.width(), 100);
+    			}	
     	    }	
     	    else
     	    {
@@ -121,12 +130,12 @@ QSize ListViewDelegate::sizeHint(const QStyleOptionViewItem &option,
     	{
     	    if (current == index)
             {
-       	    QModelIndex textIndex = index.model()->index( index.row() , 0);
-	        QTextDocument *Qtext = new QTextDocument();
-  	        Qtext->setHtml(textIndex.data(Qt::DisplayRole).toString()); 
-    	    QString text = Qtext->toPlainText();
-	        int numberoflines = (text.length() / 65 ) ;
-       	    return QSize(option.rect.width(), 50 + (25 * numberoflines));
+       	        QModelIndex textIndex = index.model()->index( index.row() , 0);
+	            QTextDocument *Qtext = new QTextDocument();
+  	            Qtext->setHtml(textIndex.data(Qt::DisplayRole).toString()); 
+    	        QString text = Qtext->toPlainText();
+	            int numberoflines = (text.length() / 65 ) ;
+       	        return QSize(option.rect.width(), 50 + (25 * numberoflines));
        	    }
        	    else
        	    {
@@ -209,6 +218,11 @@ QString ListViewDelegate::timeSecondstoString(const int time) const
    {
         AgendaItemEditor *agendaeditor = new AgendaItemEditor(parent);
         agendaeditor->setIndex(index);
+        
+        if (!agendaList.isEmpty())
+        {
+            agendaeditor->setAgendaList(agendaList);
+        }
         
         QObject::connect( agendaeditor, SIGNAL(close(QWidget *)), this, SLOT( editorClose(QWidget *) ) );
         QObject::connect( this, SIGNAL(commitData(QWidget *)), this, SIGNAL( closeEditor(QWidget *) ) );
@@ -303,6 +317,8 @@ QString ListViewDelegate::timeSecondstoString(const int time) const
         model->setData(model->index( index.row() , 2), startTime);
         int endTime = editor->getEndTime();
         model->setData(model->index( index.row() , 3), endTime);
+        QString agendaItem = editor->getAgendaItem();
+        model->setData(model->index( index.row() , 6), agendaItem);
     }
  }
  
@@ -332,4 +348,9 @@ void ListViewDelegate::display(QModelIndex index)
 void ListViewDelegate::setMPList(QStringList list)
 {
     MPList = list;
+}
+
+void ListViewDelegate::setAgendaList(QStringList list)
+{
+    agendaList = list;
 }

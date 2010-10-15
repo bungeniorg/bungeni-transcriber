@@ -141,6 +141,7 @@ class TranscribeWidget : public QMainWindow
         QNetworkReply *reply;
         QHash<QString, QString> hash;
         QHash<QString, QString> mphash;
+        QHash<QString, QString> agendahash;
         QTimer *poller;
         bool loadFile(QString newfileName);
         void createActions();
