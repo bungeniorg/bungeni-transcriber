@@ -807,6 +807,7 @@ bool TranscribeWidget::loadFile(QString newfileName)
                 	model->setData(model->index(row, 1, QModelIndex()), person);
      			model->setData(model->index(row, 2, QModelIndex()), i_startTime);
      			model->setData(model->index(row, 3, QModelIndex()), i_endTime);
+     			model->setData(model->index(row, 5, QModelIndex()), true);
      			row++;
      		}
     	}
@@ -868,22 +869,46 @@ bool TranscribeWidget::writeFile(QString fileName)
     qDebug() << "Sitting = " << playlist->getSittingName();
     for (int i = 0; i < model->rowCount(QModelIndex()); ++i)
     {
-    	writer.writeStartElement("speech");
-    	writer.writeAttribute("person", model->data(model->index(i, 1, QModelIndex()),Qt::DisplayRole).toString());
-    	QString name = model->data(model->index(i, 1, QModelIndex()),Qt::DisplayRole).toString();
-    	if (mphash.value(name, "") != "")
-    	{    
-    	    writer.writeAttribute("person_id",mphash.value(name, ""));
-    	}
-    	else
-    	{
-    	    writer.writeAttribute("person_id", "");
-    	}
-    	writer.writeAttribute("startTime", TranscribeWidget::timeSecondstoString(model->data(model->index(i, 2, QModelIndex()),Qt::DisplayRole).toInt()));
-    	writer.writeAttribute("endTime", TranscribeWidget::timeSecondstoString(model->data(model->index(i, 3, QModelIndex()),Qt::DisplayRole).toInt()));
-        writer.writeCDATA(model->data(model->index(i, 0, QModelIndex()),Qt::DisplayRole).toString());
-        //writer.writeCharacters( QDomDocument::createCDATASection ( model->data(model->index(i, 0, QModelIndex()),Qt::DisplayRole).toString() ) );
-        writer.writeEndElement();    
+        bool type = model->index( i , 5).data(Qt::DisplayRole).toBool();
+        qDebug() << "Type, Speech or not" << type;
+        if (type == true)	
+        {
+    	    writer.writeStartElement("speech");
+    	    writer.writeAttribute("person", model->data(model->index(i, 1, QModelIndex()),Qt::DisplayRole).toString());
+    	    QString name = model->data(model->index(i, 1, QModelIndex()),Qt::DisplayRole).toString();
+    	    if (mphash.value(name, "") != "")
+    	    {    
+    	        writer.writeAttribute("person_id",mphash.value(name, ""));
+    	    }
+    	    else
+    	    {
+    	        writer.writeAttribute("person_id", "");
+    	    }
+    	    writer.writeAttribute("startTime", 
+    	        TranscribeWidget::timeSecondstoString(model->data(model->index(i, 
+    	                2, QModelIndex()),Qt::DisplayRole).toInt()));
+    	    writer.writeAttribute("endTime", 
+    	        TranscribeWidget::timeSecondstoString(model->data(model->index(i, 
+    	                3, QModelIndex()),Qt::DisplayRole).toInt()));
+            writer.writeCDATA(model->data(model->index(i, 0, QModelIndex()),Qt::DisplayRole).toString());
+            //writer.writeCharacters( QDomDocument::createCDATASection ( model->data(model->index(i, 0, QModelIndex()),Qt::DisplayRole).toString() ) );
+            writer.writeEndElement();    
+        }
+        else
+        {
+            writer.writeStartElement("agenda_item");
+            writer.writeAttribute("startTime", 
+    	        TranscribeWidget::timeSecondstoString(model->data(model->index(i, 
+    	                2, QModelIndex()),Qt::DisplayRole).toInt()));
+    	    writer.writeAttribute("endTime", 
+    	        TranscribeWidget::timeSecondstoString(model->data(model->index(i, 
+    	                3, QModelIndex()),Qt::DisplayRole).toInt()));
+    	    writer.writeAttribute("id", 
+    	        TranscribeWidget::model->data(model->index(i, 
+    	                6, QModelIndex()),Qt::DisplayRole).toString());
+    	    writer.writeCDATA(model->data(model->index(i, 7, QModelIndex()),Qt::DisplayRole).toString()); 
+            writer.writeEndElement();
+        }
     }
     writer.writeEndDocument();
     newfile.close();
@@ -953,7 +978,7 @@ void TranscribeWidget::post()
    	        reader.setDevice(&newfile);
      	    while (!reader.atEnd()) {
         	    reader.readNext();
-        	    if (reader.name() == "speech")
+        	    if ((reader.name() == "speech") || (reader.name() == "agenda_item"))
         	    {	
         		    writer.writeCurrentToken(reader);
         		    writer.writeCharacters(reader.readElementText());
