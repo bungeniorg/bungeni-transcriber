@@ -11,6 +11,7 @@ HEADERS +=  src/transcribeWidget.hpp \
             src/listViewDelegate.hpp \
             src/customTextEdit.hpp \
             src/inplaceEditor.hpp \
+            src/agendaItemEditor.hpp \
             src/playlistWidget.hpp \
             src/network/formpost.hpp \
             src/addToPlaylistWidget.hpp \
@@ -28,13 +29,15 @@ FORMS   +=  src/ui/transcribe.ui \
             src/ui/controls.ui \
             src/ui/addToPlaylist.ui \
             src/ui/about.ui \
-            src/ui/serverSettings.ui
+            src/ui/serverSettings.ui \
+            src/ui/agendaItemEditor.ui
 SOURCES +=  src/transcribeWidget.cpp \
             src/controlsWidget.cpp \
             src/main.cpp \
             src/listViewDelegate.cpp \
             src/customTextEdit.cpp \
             src/inplaceEditor.cpp \
+            src/agendaItemEditor.cpp \
             src/playlistWidget.cpp \
             src/network/formpost.cpp \
             src/addToPlaylistWidget.cpp \
