@@ -2,7 +2,7 @@
 
 = Introduction =
 
-Bungeni Transcribe has been developed and tested only on Ubuntu 9.04 and may not compile/run on other operating systems. Support for Windows will be added as soon as the project is stable.
+Bungeni Transcribe has been developed and tested only on Ubuntu 9.04, Ubuntu 9.10 and Ubuntu 10.04 and may not compile/run on other operating systems. Support for Windows will be added as soon as the project is stable.
 
 = Steps =
 
