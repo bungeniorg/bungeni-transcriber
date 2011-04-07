@@ -3,7 +3,7 @@
  ********************************************************************
  * This file is part of Bungeni Transcribe
  *
- * Copyright (C) 2009 - Miano Njoka <miano@parliaments.info>
+ * Copyright (C) 2011 - Miano Njoka <miano@parliaments.info>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -30,7 +30,6 @@ int main(int argc, char *argv[])
 {
     QApplication a(argc, argv);
     TranscribeWidget *p = TranscribeWidget::getInstance();
-   // p.playFile("/home/miano/SpiritOfUbuntu.ogv"); // Replace with what you want to play
     p->show();
     return a.exec();
 }

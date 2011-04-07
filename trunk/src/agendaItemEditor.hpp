@@ -3,7 +3,7 @@
  **********************************************************
  * This file is part of Bungeni Transcribe
  *
- * Copyright (C) 2009 - UNDESA
+ * Copyright (C) 2011 - UNDESA
  *
  * Author - Miano Njoka <miano@parliaments.info>
  *
@@ -42,7 +42,6 @@ class AgendaItemEditor : public QWidget
 public:
     AgendaItemEditor(QWidget * parent = 0);
     virtual ~AgendaItemEditor();
-   
     int getStartTime();
     int getEndTime();
     void setStartTime(int);

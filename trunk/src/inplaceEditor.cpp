@@ -38,16 +38,12 @@
 InplaceEditor::InplaceEditor(QWidget * parent) : QWidget(parent)
 {
     ui.setupUi(this);
-    //TranscribeWidget *transcribe = static_cast<TranscribeWidget*>(parent);
-   // p_intf = transcribe->getp_intf();
     horizontalSlider = new QxtSpanSlider();
     horizontalSlider->setObjectName(QString::fromUtf8("horizontalSlider"));
     horizontalSlider->setOrientation(Qt::Horizontal);
-    //horizontalSlider->setMaximum(10000);
     ui.gridLayout->addWidget(horizontalSlider, 0, 3, 1, 3);
     ui.play->setIcon(QIcon(":/pixmaps/play.png"));
     speechText = new customTextEdit(parent);
-    //speechText->setGeometry(0,0,444,326);
     speechText->setObjectName(QString::fromUtf8("speech"));
     QSizePolicy sizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
     sizePolicy.setHorizontalStretch(0);
@@ -55,7 +51,6 @@ InplaceEditor::InplaceEditor(QWidget * parent) : QWidget(parent)
     sizePolicy.setHeightForWidth(speechText->sizePolicy().hasHeightForWidth());
     speechText->setSizePolicy(sizePolicy);
     ui.gridLayout->addWidget(speechText, 3, 0, 1, 7);
-    
     
     QObject::connect(ui.startTime, SIGNAL(timeChanged( const QTime & )), this, SLOT(updateStartTime( const QTime &)));
     QObject::connect(ui.endTime, SIGNAL(timeChanged( const QTime & )), this, SLOT(updateEndTime( const QTime &)));
@@ -111,7 +106,7 @@ void InplaceEditor::updateStartTime( int time )
 	QString temp;
 	QTime start;
 	QString timeText = "";
-	timeText = InplaceEditor::timeSecondstoString(time);
+	timeText = timeSecondstoString(time);
 	start = QTime::fromString(timeText);
 	ui.startTime->setTime(start);
 	
@@ -123,60 +118,10 @@ void InplaceEditor::updateEndTime( int time )
 	QString temp;
 	QTime end;
 	QString timeText = "";
-	timeText = InplaceEditor::timeSecondstoString(time);
+	timeText = timeSecondstoString(time);
 	end = QTime::fromString(timeText);
 	ui.endTime->setTime(end);
 }
-
-//Converts number of seconds into time in this format hh:mm:ss
-QString InplaceEditor::timeSecondstoString(int time)
-{
-
-	int hours, minutes, seconds;
-	QString temp;
-	hours = time / 3600;
-	minutes = (time % 3600) / 60;
-	seconds = (time % 3600) % 60;
-	
-QString timeText = "";
-
-if (hours < 10)
-	{
-		timeText.append("0"); 
-		temp.setNum(hours);
-		timeText += temp;
-	}
-	else
-	{
-		temp.setNum(hours);
-		timeText += temp;
-	}
-	if ( minutes < 10 )
-	{
-		timeText.append(":0"); 
-		temp.setNum(minutes);
-		timeText += temp;
-	}
-	else
-	{
-		temp.setNum(minutes);
-		timeText += ":"+temp;
-	}
-	if ( seconds < 10 )
-	{
-		timeText.append(":0"); 
-		temp.setNum(seconds);
-		timeText += temp;
-	}
-	else
-	{
-		temp.setNum(seconds);
-		timeText += ":" + temp;
-	}
-	return timeText;
-
-}
-
 void InplaceEditor::bold()
 {
     QTextCursor cursor(speechText->textCursor());

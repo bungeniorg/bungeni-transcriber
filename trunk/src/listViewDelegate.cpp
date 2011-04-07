@@ -3,7 +3,7 @@
  ********************************************************************
  * This file is part of Bungeni Transcribe
  *
- * Copyright (C) 2009 - UNDESA <www.parliaments.info>
+ * Copyright (C) 2011 - UNDESA <www.parliaments.info>
  *
  *
  * Author - Miano Njoka <miano@parliaments.info>
@@ -64,8 +64,8 @@ void ListViewDelegate::paint(QPainter *painter, const QStyleOptionViewItem &opti
   	    i_startTime = startTimeIndex.data(Qt::DisplayRole).toInt();
   	    i_endTime = endTimeIndex.data(Qt::DisplayRole).toInt();
  
-	    QString startTimeTxt = "Start Time : "+this->timeSecondstoString(i_startTime);
-  	    QString endTimeTxt = "End Time : "+this->timeSecondstoString(i_endTime);
+	    QString startTimeTxt = "Start Time : "+timeSecondstoString(i_startTime);
+  	    QString endTimeTxt = "End Time : "+timeSecondstoString(i_endTime);
   	  	
   	    QRect rStartTime = option.rect.adjusted(2, 2, 200, 29);
   	    painter->drawText(rStartTime.left(), rStartTime.top(), rStartTime.width(), rStartTime.height(), Qt::AlignTop|Qt::AlignLeft|Qt::TextWordWrap, startTimeTxt, &rStartTime);
@@ -87,8 +87,8 @@ void ListViewDelegate::paint(QPainter *painter, const QStyleOptionViewItem &opti
    	    QString agendaItemTxt = agendaItemIndex.data(Qt::DisplayRole).toString();
    	    i_startTime = startTimeIndex.data(Qt::DisplayRole).toInt();
   	    i_endTime = endTimeIndex.data(Qt::DisplayRole).toInt();
-   	    QString startTimeTxt = "Start Time : "+this->timeSecondstoString(i_startTime);
-  	    QString endTimeTxt = "End Time : "+this->timeSecondstoString(i_endTime);
+   	    QString startTimeTxt = "Start Time : "+timeSecondstoString(i_startTime);
+  	    QString endTimeTxt = "End Time : "+timeSecondstoString(i_endTime);
    	    QRect rStartTime = option.rect.adjusted(2, 2, 200, 29);
   	    painter->drawText(rStartTime.left(), rStartTime.top(), rStartTime.width(), rStartTime.height(), Qt::AlignTop|Qt::AlignLeft|Qt::TextWordWrap, startTimeTxt, &rStartTime);
   	  	
@@ -144,52 +144,7 @@ QSize ListViewDelegate::sizeHint(const QStyleOptionViewItem &option,
        	 }
 }
 	
-
-QString ListViewDelegate::timeSecondstoString(const int time) const
-{
-		int hours, minutes, seconds;
-		QString temp;
-		hours = time / 3600;
-		minutes = (time % 3600) / 60;
-		seconds = (time % 3600) % 60;
-		QString timeText = "";
-		if (hours < 10)
-		{
-			timeText.append("0"); 
-			temp.setNum(hours);
-			timeText += temp;
-		}
-		else
-		{
-			temp.setNum(hours);
-			timeText += temp;
-		}
-		if ( minutes < 10 )
-		{
-			timeText.append(":0"); 
-			temp.setNum(minutes);
-			timeText += temp;
-		}
-		else
-		{
-			temp.setNum(minutes);
-			timeText += ":"+temp;
-		}
-		if ( seconds < 10 )
-		{
-			timeText.append(":0"); 
-			temp.setNum(seconds);
-			timeText += temp;
-		}
-		else
-		{
-			temp.setNum(seconds);
-			timeText += ":" + temp;
-		}
-		return timeText;
-}
-
- QWidget *ListViewDelegate::createEditor(QWidget *parent,
+QWidget *ListViewDelegate::createEditor(QWidget *parent,
      const QStyleOptionViewItem & option,
      const QModelIndex & index ) const
  {
