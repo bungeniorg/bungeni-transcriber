@@ -3,7 +3,7 @@
  **********************************************************
  * This file is part of Bungeni Transcribe
  *
- * Copyright (C) 2009 - UNDESA
+ * Copyright (C) 2011 - UNDESA
  *
  * Author - Miano Njoka <miano@parliaments.info>
  *
@@ -47,7 +47,6 @@ public:
 	ListViewDelegate(QObject *parent);
     void paint(QPainter *painter, const QStyleOptionViewItem &option, const QModelIndex &index) const;                 
 	QSize sizeHint(const QStyleOptionViewItem &option, const QModelIndex &index) const; 
-	QString timeSecondstoString(const int time) const;
     void setEditorData ( QWidget * editor, const QModelIndex & index ) const;
     void setModelData ( QWidget * editor, QAbstractItemModel * model, const QModelIndex & index ) const;
     void updateEditorGeometry ( QWidget * editor, const QStyleOptionViewItem & option, const QModelIndex & index ) const;

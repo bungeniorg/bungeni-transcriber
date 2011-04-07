@@ -3,7 +3,7 @@
  ********************************************************************
  * This file is part of Bungeni Transcribe
  *
- * Copyright (C) 2009 - UNDESA <www.parliaments.info>
+ * Copyright (C) 2011 - UNDESA <www.parliaments.info>
  *
  *
  * Author - Miano Njoka <miano@parliaments.info>
@@ -23,13 +23,13 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, 
  * Boston, MA  02110-1301  USA
  ***********************************************************************/
- 
- 
 
 #include "util.hpp"
 
 #include <QKeyEvent>
 #include <QWheelEvent>
+
+#define HANDLE( qt, vk ) case Qt::qt : i_vlck |= vk; found = true;break
 
 /***************************************************************************
  * Hotkeys converters
@@ -52,7 +52,6 @@ int qtEventToVLCKey( QKeyEvent *e )
 
     bool found = false;
     /* Look for some special keys */
-#define HANDLE( qt, vk ) case Qt::qt : i_vlck |= vk; found = true;break
     switch( e->key() )
     {
         HANDLE( Key_Left, KEY_LEFT );
@@ -134,3 +133,43 @@ void KeyShortcutEdit::mousePressEvent( QMouseEvent *)
     emit pressed();
 }
 
+QString timeSecondstoString(int time)
+{
+
+	int hours, minutes, seconds;
+	QString temp;
+	hours = time / 3600;
+    minutes = (time % 3600) / 60;
+    seconds = (time % 3600) % 60;
+    QString timeText = "";
+
+    if (hours < 10){
+        timeText.append("0"); 
+        temp.setNum(hours);
+        timeText += temp;
+    }
+	else{
+		temp.setNum(hours);
+		timeText += temp;
+	}
+	if ( minutes < 10 ){
+		timeText.append(":0"); 
+		temp.setNum(minutes);
+		timeText += temp;
+	}
+	else{
+		temp.setNum(minutes);
+		timeText += ":"+temp;
+	}
+	if ( seconds < 10 )
+	{
+		timeText.append(":0"); 
+		temp.setNum(seconds);
+		timeText += temp;
+	}else
+	{
+		temp.setNum(seconds);
+		timeText += ":" + temp;
+	}
+	return timeText;
+}

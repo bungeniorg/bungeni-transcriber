@@ -3,7 +3,7 @@
  ********************************************************************
  * This file is part of Bungeni Transcribe
  *
- * Copyright (C) 2009 - UNDESA <www.parliaments.info>
+ * Copyright (C) 2011 - UNDESA <www.parliaments.info>
  *
  *
  * Author - Miano Njoka <miano@parliaments.info>

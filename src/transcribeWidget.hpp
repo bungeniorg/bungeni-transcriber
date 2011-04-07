@@ -3,7 +3,7 @@
  **********************************************************
  * This file is part of Bungeni Transcribe
  *
- * Copyright (C) 2009 - UNDESA
+ * Copyright (C) 2011 - UNDESA
  *
  * Author - Miano Njoka <miano@parliaments.info>
  *
@@ -22,9 +22,6 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, 
  * Boston, MA  02110-1301  USA
  */
- 
- 
-
 
 #ifndef _TRANSCRIBEWIDGET_H_
 #define _TRANSCRIBEWIDGET_H_
@@ -104,7 +101,7 @@ class TranscribeWidget : public QMainWindow
         void getMPList();
         void MPListReply();
         void post();
-        void addAgendaItem();
+        //void addAgendaItem();
     private:
         TranscribeWidget();
         ~TranscribeWidget();
@@ -129,7 +126,6 @@ class TranscribeWidget : public QMainWindow
         QItemSelectionModel *selectionModel;
         void setupModelView();
         QxtSpanSlider *horizontalSlider; 
-        QString timeSecondstoString(int time);
         QModelIndex currentIndex;
         QTemporaryFile * writeTemp();
         void refresh(const QModelIndex & index);
@@ -162,13 +158,6 @@ class TranscribeWidget : public QMainWindow
         int currentFileDuration;
         QString sittingName;
         QString mediaLocation;
-        /*
-        QString VLCKeyToString( int val );
-        int qtWheelEventToVLCKey( QWheelEvent *e );
-        int qtEventToVLCKey( QKeyEvent *e );
-        int qtKeyModifiersToVLC( QInputEvent* e );
-        */
-        //void keyPressEvent( QKeyEvent *e );
         QString currentMediaFile;
         ControlsWidget *controls;
         void keyPressEvent( QKeyEvent *keyEvent );

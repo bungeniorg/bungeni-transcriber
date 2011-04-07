@@ -3,7 +3,7 @@
  ********************************************************************
  * This file is part of Bungeni Transcribe
  *
- * Copyright (C) 2009 - UNDESA <www.parliaments.info>
+ * Copyright (C) 2011 - UNDESA <www.parliaments.info>
  *
  *
  * Author - Miano Njoka <miano@parliaments.info>
@@ -55,31 +55,24 @@ TranscribeWidget::TranscribeWidget() : QMainWindow()
     delegate = new ListViewDelegate(this);
     QObject::connect( ui.addButton, SIGNAL(clicked()), this, SLOT(addSpeech()) );
     QObject::connect( ui.removeButton, SIGNAL(clicked()), this, SLOT(removeSpeech()) );
-    QObject::connect( ui.agendaItemButton, SIGNAL(clicked()), this, SLOT(addAgendaItem()) );
+    //QObject::connect( ui.agendaItemButton, SIGNAL(clicked()), this, SLOT(addAgendaItem()) );
     QObject::connect( ui.table, SIGNAL(doubleClicked(QModelIndex)), delegate, SLOT(currentEditing(QModelIndex)));
     QObject::connect( ui.table, SIGNAL(clicked(QModelIndex)), delegate, SLOT(display(QModelIndex)));
     QObject::connect( ui.table, SIGNAL(clicked(QModelIndex)), this, SLOT(selection(QModelIndex)));
     this->setupModelView();
     fileName="";
     
-    //video stuff
-    //preparation of the vlc command
     const char * const vlc_args[] = {
               "-I", "dummy", /* Don't use any interface */
               "--ignore-config", /* Don't use VLC's config */
-              "--extraintf=logger", //log anything
-             // "--verbose=2", //be much more verbose then normal for debugging purpose
-              "--plugin-path=/home/miano/Work/vlc-0.9.10/modules/" };
+              "--extraintf=logger"};
 
     video=new QFrame(this);
     QPalette palette = video->palette();
     palette.setColor( backgroundRole(), QColor( 0, 0, 0 ) );
     video->setPalette( palette );
     video->setAutoFillBackground( true );
-   
-    // Note: if you use streaming, there is no ability to use the position slider
-   // ui.positionSlider->setMaximum(POSITION_RESOLUTION);
-
+    
     ui.gridLayout_2->addWidget(video, 0, 0, 1, 3);
     
     controls = new ControlsWidget();
@@ -107,9 +100,8 @@ TranscribeWidget::TranscribeWidget() : QMainWindow()
     _isPlaying=false;
     poller=new QTimer(this);
 
-
     //Initialize an instance of vlc
-    //a structure for the exception is neede for this initalization
+    //a structure for the exception is needed for this initalization
     libvlc_exception_init(&_vlcexcep);
 
     //create a new libvlc instance
@@ -126,8 +118,6 @@ TranscribeWidget::TranscribeWidget() : QMainWindow()
 
     poller->start(100); //start timer to trigger every 100 ms the updateInterface slot
 }
-
-
 
 TranscribeWidget::~TranscribeWidget()
 {
@@ -157,10 +147,6 @@ void TranscribeWidget :: stop()
 void TranscribeWidget::play()
 {
     qDebug() << "Playing file =" << currentMediaFile;
-    //if (currentMediaFile != "")
-    //{
-     //   playFile(currentMediaFile);
-    //}
     qDebug() << "is playing(Before)" << _isPlaying;
     if (currentMediaFile != "")
     {
@@ -196,6 +182,7 @@ void TranscribeWidget::skipForward(int sec)
 void TranscribeWidget::skipBackward(int sec)
 {
 }
+
 void TranscribeWidget::playFaster()
 {
     float currentRate = libvlc_media_player_get_rate( _mp, &_vlcexcep);
@@ -502,7 +489,7 @@ void TranscribeWidget::addSpeech()
         QMessageBox::warning(this, tr("Error"),"Please add/select a file from the playlist");
     }
 }
-
+/*
 void TranscribeWidget::addAgendaItem()
 {
 	qDebug( "Add Agenda Item entered" );
@@ -542,6 +529,7 @@ void TranscribeWidget::addAgendaItem()
         QMessageBox::warning(this, tr("Error"),"Please add/select a file from the playlist");
     }
 }
+*/
 void TranscribeWidget::setupModelView()
 {
     model = new QStandardItemModel(0,8,this);
@@ -592,53 +580,7 @@ void TranscribeWidget::updateComplete( int state )
     qDebug() << "Model Changed to " << model->data(model->index(currentIndex.row(), 4)).toInt();
 }
 
-QString TranscribeWidget::timeSecondstoString(int time)
-{
 
-	int hours, minutes, seconds;
-	QString temp;
-	hours = time / 3600;
-	minutes = (time % 3600) / 60;
-	seconds = (time % 3600) % 60;
-	
-QString timeText = "";
-
-if (hours < 10)
-	{
-		timeText.append("0"); 
-		temp.setNum(hours);
-		timeText += temp;
-	}
-	else
-	{
-		temp.setNum(hours);
-		timeText += temp;
-	}
-	if ( minutes < 10 )
-	{
-		timeText.append(":0"); 
-		temp.setNum(minutes);
-		timeText += temp;
-	}
-	else
-	{
-		temp.setNum(minutes);
-		timeText += ":"+temp;
-	}
-	if ( seconds < 10 )
-	{
-		timeText.append(":0"); 
-		temp.setNum(seconds);
-		timeText += temp;
-	}
-	else
-	{
-		temp.setNum(seconds);
-		timeText += ":" + temp;
-	}
-	return timeText;
-
-}
 /*
 void  TranscribeWidget::play(QModelIndex _index)
 {
@@ -1289,117 +1231,6 @@ void TranscribeWidget::playItem(const QModelIndex& index)
         
     }
 }
-/*
-
-void TranscribeWidget::keyPressEvent( QKeyEvent *e )
-{
-
-    int i_vlck = qtEventToVLCKey( e );
-    if( i_vlck > 0 )
-    {
-        //var_SetInteger( _mp, "key-pressed", i_vlck );
-        e->accept();
-    }
-    else
-        e->ignore();
-}
-*/
-/***************************************************************************
- * Hotkeys converters
- ***************************************************************************/
-/*
-int TranscribeWidget::qtKeyModifiersToVLC( QInputEvent* e )
-{
-    int i_keyModifiers = 0;
-    if( e->modifiers() & Qt::ShiftModifier ) i_keyModifiers |= KEY_MODIFIER_SHIFT;
-    if( e->modifiers() & Qt::AltModifier ) i_keyModifiers |= KEY_MODIFIER_ALT;
-    if( e->modifiers() & Qt::ControlModifier ) i_keyModifiers |= KEY_MODIFIER_CTRL;
-    if( e->modifiers() & Qt::MetaModifier ) i_keyModifiers |= KEY_MODIFIER_META;
-    return i_keyModifiers;
-}
-
-int TranscribeWidget::qtEventToVLCKey( QKeyEvent *e )
-{
-    int i_vlck = 0;
-    i_vlck |= qtKeyModifiersToVLC( e );
-
-    bool found = false;
-#define HANDLE( qt, vk ) case Qt::qt : i_vlck |= vk; found = true;break
-    switch( e->key() )
-    {
-        HANDLE( Key_Left, KEY_LEFT );
-        HANDLE( Key_Right, KEY_RIGHT );
-        HANDLE( Key_Up, KEY_UP );
-        HANDLE( Key_Down, KEY_DOWN );
-        HANDLE( Key_Space, KEY_SPACE );
-        HANDLE( Key_Escape, KEY_ESC );
-        HANDLE( Key_Return, KEY_ENTER );
-        HANDLE( Key_Enter, KEY_ENTER );
-        HANDLE( Key_F1, KEY_F1 );
-        HANDLE( Key_F2, KEY_F2 );
-        HANDLE( Key_F3, KEY_F3 );
-        HANDLE( Key_F4, KEY_F4 );
-        HANDLE( Key_F5, KEY_F5 );
-        HANDLE( Key_F6, KEY_F6 );
-        HANDLE( Key_F7, KEY_F7 );
-        HANDLE( Key_F8, KEY_F8 );
-        HANDLE( Key_F9, KEY_F9 );
-        HANDLE( Key_F10, KEY_F10 );
-        HANDLE( Key_F11, KEY_F11 );
-        HANDLE( Key_F12, KEY_F12 );
-        HANDLE( Key_PageUp, KEY_PAGEUP );
-        HANDLE( Key_PageDown, KEY_PAGEDOWN );
-        HANDLE( Key_Home, KEY_HOME );
-        HANDLE( Key_End, KEY_END );
-        HANDLE( Key_Insert, KEY_INSERT );
-        HANDLE( Key_Delete, KEY_DELETE );
-        HANDLE( Key_VolumeDown, KEY_VOLUME_DOWN);
-        HANDLE( Key_VolumeUp, KEY_VOLUME_UP );
-        HANDLE( Key_VolumeMute, KEY_VOLUME_MUTE );
-        HANDLE( Key_MediaPlay, KEY_MEDIA_PLAY_PAUSE );
-        HANDLE( Key_MediaStop, KEY_MEDIA_STOP );
-        HANDLE( Key_MediaPrevious, KEY_MEDIA_PREV_TRACK );
-        HANDLE( Key_MediaNext, KEY_MEDIA_NEXT_TRACK );
-
-    }
-    if( !found )
-    {
-        if( e->key() >= Qt::Key_A && e->key() <= Qt::Key_Z )
-            i_vlck += e->key() + 32;
-        else if( e->key() >= Qt::Key_Space && e->key() <= Qt::Key_AsciiTilde )
-            i_vlck += e->key();
-    }
-    return i_vlck;
-}
-
-int TranscribeWidget::qtWheelEventToVLCKey( QWheelEvent *e )
-{
-    int i_vlck = 0;
-    i_vlck |= qtKeyModifiersToVLC( e );
-    if ( e->delta() > 0 )
-        i_vlck |= KEY_MOUSEWHEELUP;
-    else
-        i_vlck |= KEY_MOUSEWHEELDOWN;
-    return i_vlck;
-}
-
-QString VLCKeyToString( int val )
-{
-    const char *base = KeyToString (val & ~KEY_MODIFIER);
-
-    QString r = "";
-    if( val & KEY_MODIFIER_CTRL )
-        r+= "Ctrl+";
-    if( val & KEY_MODIFIER_ALT )
-        r+= "Alt+";
-    if( val & KEY_MODIFIER_SHIFT )
-        r+= "Shift+";
-
-    return r + (base ? base : "Unset");
-}
-
-*/
-
 
 void TranscribeWidget::createMenus()
 {
